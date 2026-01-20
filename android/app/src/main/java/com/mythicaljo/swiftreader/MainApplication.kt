@@ -1,4 +1,4 @@
-package com.swift.read
+package com.mythicaljo.swiftreader
 
 import android.app.Application
 import android.content.res.Configuration

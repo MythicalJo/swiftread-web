@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.swift.read'
+    namespace 'com.mythicaljo.swiftreader'
     defaultConfig {
-        applicationId 'com.swift.read'
+        applicationId 'com.mythicaljo.swiftreader'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

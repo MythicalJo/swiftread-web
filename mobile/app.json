@@ -16,7 +16,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.swift.read",
+      "package": "com.mythicaljo.swiftreader",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
