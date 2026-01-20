@@ -1,0 +1,10 @@
+node_modules/
+dist/
+www/
+build/
+.DS_Store
+.env
+android/.gradle/
+android/app/build/
+android/captures/
+ios/DerivedData/
