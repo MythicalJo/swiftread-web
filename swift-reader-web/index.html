@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="SwiftRead - Speed reading app for faster, smarter reading">
+    
+    <!-- iOS PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SwiftRead">
+    <link rel="apple-touch-icon" href="./assets/icon-192.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="./assets/icon-192.png">
+    
+    <title>SwiftRead</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/styles.css">
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <!-- Status Overlay (Clock & Battery) -->
+    <div id="status-overlay" class="status-overlay hidden">
+        <div id="clock-display"></div>
+        <div id="battery-display"></div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="app-container">
+        <!-- Tab Content Container -->
+        <div id="tab-container" class="tab-container">
+            <!-- Library Tab -->
+            <div id="library-tab" class="tab-content active">
+                <div class="library-header">
+                    <h1 id="library-title">Library</h1>
+                    <button id="settings-btn" class="icon-btn" aria-label="Settings">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Library Controls -->
+                <div class="library-controls">
+                    <button id="add-book-btn" class="primary-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span id="add-book-text">Add Book</span>
+                    </button>
+                    
+                    <div class="sort-controls">
+                        <select id="sort-select" class="sort-select">
+                            <option value="recent">Recent</option>
+                            <option value="added">Date Added</option>
+                            <option value="az">A-Z</option>
+                            <option value="finished">Finished</option>
+                            <option value="unfinished">Unfinished</option>
+                        </select>
+                        
+                        <button id="sort-order-btn" class="icon-btn" aria-label="Sort Order">
+                            <svg id="sort-order-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18M3 12h12M3 18h6"></path>
+                            </svg>
+                        </button>
+                        
+                        <button id="view-mode-btn" class="icon-btn" aria-label="View Mode">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Books Grid -->
+                <div id="books-container" class="books-grid">
+                    <!-- Books will be dynamically inserted here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="empty-state hidden">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                    <h2 id="empty-title">Your library is empty</h2>
+                    <p id="empty-subtitle">Tap the + button to add your first book</p>
+                </div>
+            </div>
+
+            <!-- Categories Tab -->
+            <div id="categories-tab" class="tab-content">
+                <div class="library-header">
+                    <h1 id="categories-title">Categories</h1>
+                    <button id="add-category-btn" class="icon-btn" aria-label="Add Category">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div id="categories-container" class="categories-container">
+                    <!-- Categories will be dynamically inserted here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="categories-empty" class="empty-state hidden">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <h2 id="categories-empty-title">No categories yet</h2>
+                    <p id="categories-empty-subtitle">Create one to organize your books</p>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history-tab" class="tab-content">
+                <div class="library-header">
+                    <h1 id="history-title">History</h1>
+                </div>
+                
+                <div id="history-container" class="history-container">
+                    <!-- History stats will be dynamically inserted here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="history-empty" class="empty-state hidden">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18 17V9"></path>
+                        <path d="M13 17V5"></path>
+                        <path d="M8 17v-3"></path>
+                    </svg>
+                    <h2 id="history-empty-title">No reading history yet</h2>
+                    <p id="history-empty-subtitle">Your stats are stored locally on your device</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab-item active" data-tab="library">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Library</span>
+            </button>
+            <button class="tab-item" data-tab="categories">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Categories</span>
+            </button>
+            <button class="tab-item" data-tab="history">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"></path>
+                    <path d="M18 17V9"></path>
+                    <path d="M13 17V5"></path>
+                    <path d="M8 17v-3"></path>
+                </svg>
+                <span>History</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Reader View (Hidden by default) -->
+    <div id="reader-view" class="reader-view hidden">
+        <!-- Reader content will be dynamically created -->
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <!-- Settings content will be dynamically created -->
+        </div>
+    </div>
+
+    <!-- File Upload Input (Hidden) -->
+    <input type="file" id="file-input" accept=".txt,.pdf,.epub" multiple style="display: none;">
+
+    <!-- Scripts -->
+    <script type="module" src="./js/i18n.js"></script>
+    <script type="module" src="./js/storage.js"></script>
+    <script type="module" src="./js/fileProcessor.js"></script>
+    <script type="module" src="./js/reader.js"></script>
+    <script type="module" src="./js/library.js"></script>
+    <script type="module" src="./js/categories.js"></script>
+    <script type="module" src="./js/history.js"></script>
+    <script type="module" src="./js/settings.js"></script>
+    <script type="module" src="./js/app.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registered'))
+                    .catch(err => console.log('SW registration failed'));
+            });
+        }
+    </script>
+</body>
+</html>
