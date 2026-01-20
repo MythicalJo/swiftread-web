@@ -4,12 +4,17 @@ export const translations = {
     en: {
         library: {
             title: "Library",
+            subtitle: "Select a book or import a new one",
             searchPlaceholder: "Search books...",
             emptyState: "Your library is empty",
             emptyStateSub: "Tap the + button to add your first book",
             addBook: "Add Book",
             pasteText: "Paste Text",
             uploadFile: "Upload File",
+            pasteModalTitle: "Paste Text",
+            pasteTitlePlaceholder: "Enter title (optional)",
+            pasteContentPlaceholder: "Paste your text here...",
+            pasteConfirm: "Add to Library",
             sortRecent: "Recent",
             sortAz: "A-Z",
             sortAdded: "Date Added",
@@ -44,9 +49,9 @@ export const translations = {
             sortTitle: "Sort Library"
         },
         reader: {
-            scanning: "Scanning...",
+            scanning: "SCANNING",
             fullText: "Full Text",
-            fullTextInstruction: "Tap any word to resume reading from there.",
+            fullTextInstruction: "Select a word to start reading from there",
             wpm: "WPM",
             complete: "Complete"
         },
@@ -131,6 +136,7 @@ export const translations = {
     es: {
         library: {
             title: "Biblioteca",
+            subtitle: "Selecciona un libro o importa uno nuevo",
             searchPlaceholder: "Buscar libros...",
             emptyState: "Tu biblioteca está vacía",
             emptyStateSub: "Toca el botón + para añadir tu primer libro",
@@ -171,9 +177,9 @@ export const translations = {
             sortTitle: "Ordenar Biblioteca"
         },
         reader: {
-            scanning: "Escaneando...",
+            scanning: "ESCANEANDO",
             fullText: "Texto Completo",
-            fullTextInstruction: "Toca cualquier palabra para reanudar la lectura desde ahí.",
+            fullTextInstruction: "Selecciona una palabra para leer desde ahí",
             wpm: "PPM",
             complete: "Completado"
         },

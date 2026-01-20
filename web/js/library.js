@@ -125,8 +125,19 @@ function getSortedBooks() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Add book button
-    document.getElementById('add-book-btn').addEventListener('click', showAddBookMenu);
+    // Upload file button
+    document.getElementById('upload-file-btn').addEventListener('click', () => {
+        document.getElementById('file-input').click();
+    });
+
+    // Paste text button
+    document.getElementById('paste-text-btn').addEventListener('click', openPasteModal);
+
+    // Paste modal close
+    document.getElementById('close-paste-modal').addEventListener('click', closePasteModal);
+
+    // Confirm paste button
+    document.getElementById('confirm-paste-btn').addEventListener('click', handlePasteContent);
 
     // Sort select
     document.getElementById('sort-select').addEventListener('change', (e) => {
@@ -173,10 +184,10 @@ async function handleFileUpload(e) {
     if (files.length === 0) return;
 
     // Show processing indicator
-    const addBtn = document.getElementById('add-book-btn');
-    const originalText = addBtn.innerHTML;
-    addBtn.innerHTML = '<div class="spinner"></div>';
-    addBtn.disabled = true;
+    const uploadBtn = document.getElementById('upload-file-btn');
+    const originalContent = uploadBtn.innerHTML;
+    uploadBtn.innerHTML = '<div class="spinner"></div>';
+    uploadBtn.disabled = true;
 
     // Check for duplicates
     const existingTitles = new Set(books.map(b => b.title.toLowerCase().trim()));
@@ -226,22 +237,40 @@ async function handleFileUpload(e) {
 
     // Reset file input and button
     e.target.value = '';
-    addBtn.innerHTML = originalText;
-    addBtn.disabled = false;
+    uploadBtn.innerHTML = originalContent;
+    uploadBtn.disabled = false;
 
     renderLibrary();
 }
 
-// Show paste text dialog
-function showPasteTextDialog() {
-    const title = prompt(t('library.docTitleLabel', settings.language), '');
-    if (!title) return;
+// Open paste modal
+function openPasteModal() {
+    document.getElementById('paste-modal').classList.remove('hidden');
+    document.getElementById('paste-title-input').value = '';
+    document.getElementById('paste-content-input').value = '';
+}
 
-    const text = prompt(t('library.contentLabel', settings.language), '');
-    if (!text) return;
+// Close paste modal
+function closePasteModal() {
+    document.getElementById('paste-modal').classList.add('hidden');
+}
+
+// Handle pasted content
+function handlePasteContent() {
+    const titleInp = document.getElementById('paste-title-input');
+    const contentInp = document.getElementById('paste-content-input');
+    const lang = settings.language || 'en';
+
+    const title = titleInp.value.trim();
+    const text = contentInp.value.trim();
+
+    if (!text) {
+        alert(t('common.pasteErrorBody', lang));
+        return;
+    }
 
     try {
-        const words = text.trim().split(/\s+/);
+        const words = text.split(/\s+/).filter(w => w.length > 0);
         if (words.length === 0) return;
 
         const newBook = {
@@ -259,9 +288,10 @@ function showPasteTextDialog() {
         books.unshift(newBook);
         storage.setLibrary(books);
         renderLibrary();
+        closePasteModal();
 
     } catch (e) {
-        alert(t('common.pasteErrorBody', settings.language));
+        alert(t('common.pasteErrorBody', lang));
     }
 }
 
@@ -298,10 +328,17 @@ window.libraryActions = {
 function updateLibraryTranslations() {
     const lang = settings.language || 'en';
 
-    document.getElementById('library-title').textContent = t('library.title', lang);
-    document.getElementById('add-book-text').textContent = t('library.addBook', lang);
+    document.getElementById('library-subtitle').textContent = t('library.subtitle', lang);
+    document.getElementById('upload-file-text').textContent = t('library.uploadFile', lang);
+    document.getElementById('paste-text-text').textContent = t('library.pasteText', lang);
     document.getElementById('empty-title').textContent = t('library.emptyState', lang);
     document.getElementById('empty-subtitle').textContent = t('library.emptyStateSub', lang);
+
+    // Paste Modal
+    document.getElementById('paste-modal-title').textContent = t('library.pasteModalTitle', lang);
+    document.getElementById('paste-title-input').placeholder = t('library.pasteTitlePlaceholder', lang);
+    document.getElementById('paste-content-input').placeholder = t('library.pasteContentPlaceholder', lang);
+    document.getElementById('confirm-paste-btn').textContent = t('library.pasteConfirm', lang);
 
     // Update sort select options
     const sortSelect = document.getElementById('sort-select');

@@ -10,6 +10,7 @@ let currentIndex = 0;
 let intervalId = null;
 let startTime = null;
 let elapsedSeconds = 0;
+let wakeLock = null;
 let stopwatchInterval = null;
 
 // Initialize reader
@@ -20,103 +21,68 @@ export function initReader(book, userSettings) {
     isPlaying = false;
     elapsedSeconds = 0;
 
+    applyTheme();
     renderReader();
     setupReaderControls();
-    applyTheme();
 }
 
-// Render reader view
+// Render reader view (Update existing DOM)
 function renderReader() {
     const readerView = document.getElementById('reader-view');
     const lang = settings.language || 'en';
 
-    readerView.innerHTML = `
-        <div class="reader-header">
-            <button id="reader-back-btn" class="icon-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-            </button>
-            <h2 style="flex: 1; text-align: center; font-size: 16px; font-weight: 700;">${escapeHtml(currentBook.title)}</h2>
-            <button id="reader-settings-btn" class="icon-btn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
-                </svg>
-            </button>
-        </div>
-        
-        <div class="reader-content">
-            <div class="word-display">
-                <div class="word-context" id="word-before"></div>
-                <div class="word-main" id="word-current"></div>
-                <div class="word-context" id="word-after"></div>
-            </div>
-            
-            <div class="reader-controls" id="reader-controls">
-                <div class="reader-progress" id="reader-progress">
-                    <div class="reader-progress-bar" id="reader-progress-bar"></div>
-                </div>
-                
-                <div class="reader-buttons">
-                    <button id="rewind-btn" class="icon-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="11 19 2 12 11 5 11 19"></polygon>
-                            <polygon points="22 19 13 12 22 5 22 19"></polygon>
-                        </svg>
-                    </button>
-                    
-                    <button id="play-pause-btn" class="reader-btn">
-                        <svg id="play-icon" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                        <svg id="pause-icon" class="hidden" width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="6" y="4" width="4" height="16"></rect>
-                            <rect x="14" y="4" width="4" height="16"></rect>
-                        </svg>
-                    </button>
-                    
-                    <button id="forward-btn" class="icon-btn">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polygon points="13 19 22 12 13 5 13 19"></polygon>
-                            <polygon points="2 19 11 12 2 5 2 19"></polygon>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="reader-wpm">
-                    <button id="wpm-decrease" class="wpm-btn">−</button>
-                    <div class="wpm-display">
-                        <span id="wpm-value">${settings.wpm}</span>
-                        <div style="font-size: 12px; color: var(--text-secondary);">${t('reader.wpm', lang)}</div>
-                    </div>
-                    <button id="wpm-increase" class="wpm-btn">+</button>
-                </div>
-            </div>
-        </div>
-    `;
+    // Update Top Bar
+    document.getElementById('reader-book-title').textContent = currentBook.title;
+    updateProgressSubtitle();
 
+    // Update WPM
+    document.getElementById('reader-wpm-value').textContent = settings.wpm;
+    document.getElementById('reader-wpm-label').textContent = t('reader.wpm', lang);
+
+    // Scrubber
+    document.getElementById('scrubber-text').textContent = t('reader.scanning', lang);
+
+    // Show view
     readerView.classList.remove('hidden');
+
+    // Initial display
     displayWord(currentIndex);
-    updateProgress();
+}
+
+function updateProgressSubtitle() {
+    const lang = settings.language || 'en';
+    const progress = Math.round((currentIndex / (currentBook.content?.length || 1)) * 100);
+    document.getElementById('reader-progress-subtitle').textContent = `${progress}% ${t('reader.complete', lang)}`;
 }
 
 // Setup reader controls
 function setupReaderControls() {
     document.getElementById('reader-back-btn').addEventListener('click', closeReader);
-    document.getElementById('play-pause-btn').addEventListener('click', togglePlayPause);
-    document.getElementById('rewind-btn').addEventListener('click', rewind);
-    document.getElementById('forward-btn').addEventListener('click', forward);
-    document.getElementById('wpm-decrease').addEventListener('click', () => adjustWPM(-settings.wpmStep));
-    document.getElementById('wpm-increase').addEventListener('click', () => adjustWPM(settings.wpmStep));
+    document.getElementById('reader-list-btn').addEventListener('click', openFullTextModal);
+    document.getElementById('reader-play-pause-btn').addEventListener('click', togglePlayPause);
+    document.getElementById('reader-rewind-btn').addEventListener('click', rewind);
+    document.getElementById('wpm-decrease-btn').addEventListener('click', () => adjustWPM(-settings.wpmStep));
+    document.getElementById('wpm-increase-btn').addEventListener('click', () => adjustWPM(settings.wpmStep));
+    document.getElementById('reader-settings-btn').addEventListener('click', openSettings);
 
-    // Progress bar click
-    document.getElementById('reader-progress').addEventListener('click', handleProgressClick);
+    const slider = document.getElementById('reader-progress-slider');
+    slider.max = currentBook.content?.length - 1 || 0;
+    slider.value = currentIndex;
+    slider.addEventListener('input', (e) => {
+        stopReading();
+        displayWord(parseInt(e.target.value));
+    });
 
-    // Auto-hide controls
-    if (settings.autoHideControls) {
-        setupAutoHide();
-    }
+    // Scrubber / Toggle Controls logic
+    setupInteractionArea();
+
+    // Full Text listeners
+    document.getElementById('close-full-text-btn').addEventListener('click', closeFullTextModal);
+}
+
+function openSettings() {
+    stopReading();
+    window.dispatchEvent(new CustomEvent('openSettings'));
 }
 
 // Display word
@@ -128,8 +94,11 @@ function displayWord(index) {
     }
 
     const word = currentBook.content[index] || '';
-    const wordBefore = settings.showContext && index > 0 ? currentBook.content[index - 1] : '';
-    const wordAfter = settings.showContext && index < currentBook.content.length - 1 ? currentBook.content[index + 1] : '';
+
+    // Context (similar to Android: 40 words ahead)
+    const contextContent = settings.showContext
+        ? currentBook.content.slice(index + 1, index + 40).join(' ')
+        : '';
 
     // Calculate ORP (Optimal Recognition Point)
     const orpIndex = Math.floor(word.length / 3);
@@ -138,22 +107,19 @@ function displayWord(index) {
     const after = word.slice(orpIndex + 1);
 
     // Update display
-    document.getElementById('word-before').textContent = wordBefore;
-    document.getElementById('word-before').style.opacity = settings.contextOpacity;
-    document.getElementById('word-before').style.fontSize = settings.contextFontSize + 'px';
-
-    const currentWordEl = document.getElementById('word-current');
+    const currentWordEl = document.getElementById('word-display-main');
     currentWordEl.innerHTML = `
         <span>${escapeHtml(before)}</span><span class="word-orp" style="color: ${settings.orpColor}; opacity: ${settings.orpOpacity};">${escapeHtml(orp)}</span><span>${escapeHtml(after)}</span>
     `;
     currentWordEl.style.fontSize = settings.fontSize + 'px';
 
-    document.getElementById('word-after').textContent = wordAfter;
-    document.getElementById('word-after').style.opacity = settings.contextOpacity;
-    document.getElementById('word-after').style.fontSize = settings.contextFontSize + 'px';
+    const contextEl = document.getElementById('context-text');
+    contextEl.textContent = contextContent;
+    document.getElementById('context-area').style.display = settings.showContext ? 'block' : 'none';
 
     currentIndex = index;
     updateProgress();
+    updateProgressSubtitle();
 }
 
 // Toggle play/pause
@@ -170,8 +136,10 @@ function startReading() {
     isPlaying = true;
     startTime = Date.now();
 
-    document.getElementById('play-icon').classList.add('hidden');
-    document.getElementById('pause-icon').classList.remove('hidden');
+    document.getElementById('web-play-icon').classList.add('hidden');
+    document.getElementById('web-pause-icon').classList.remove('hidden');
+
+    requestWakeLock();
 
     // Start stopwatch
     stopwatchInterval = setInterval(() => {
@@ -224,8 +192,10 @@ function stopReading() {
         stopwatchInterval = null;
     }
 
-    document.getElementById('play-icon').classList.remove('hidden');
-    document.getElementById('pause-icon').classList.add('hidden');
+    document.getElementById('web-play-icon').classList.remove('hidden');
+    document.getElementById('web-pause-icon').classList.add('hidden');
+
+    releaseWakeLock();
 
     // Save progress
     saveProgress();
@@ -245,8 +215,8 @@ function forward() {
 
 // Adjust WPM
 function adjustWPM(delta) {
-    settings.wpm = Math.max(50, Math.min(1000, settings.wpm + delta));
-    document.getElementById('wpm-value').textContent = settings.wpm;
+    settings.wpm = Math.max(50, Math.min(1500, settings.wpm + delta));
+    document.getElementById('reader-wpm-value').textContent = settings.wpm;
 
     // Save settings
     storage.setSettings(settings);
@@ -258,20 +228,9 @@ function adjustWPM(delta) {
     }
 }
 
-// Handle progress bar click
-function handleProgressClick(e) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = x / rect.width;
-    const newIndex = Math.floor(percent * currentBook.content.length);
-
-    displayWord(newIndex);
-}
-
-// Update progress bar
+// Update progress bar/slider
 function updateProgress() {
-    const percent = (currentIndex / currentBook.content.length) * 100;
-    document.getElementById('reader-progress-bar').style.width = percent + '%';
+    document.getElementById('reader-progress-slider').value = currentIndex;
 }
 
 // Save progress
@@ -291,9 +250,8 @@ function saveProgress() {
 // Show complete message
 function showComplete() {
     const lang = settings.language || 'en';
-    document.getElementById('word-current').textContent = t('reader.complete', lang);
-    document.getElementById('word-before').textContent = '';
-    document.getElementById('word-after').textContent = '';
+    document.getElementById('word-display-main').textContent = t('reader.complete', lang);
+    document.getElementById('context-text').textContent = '';
 }
 
 // Close reader
@@ -310,29 +268,153 @@ function applyTheme() {
     document.documentElement.setAttribute('data-theme', settings.theme);
 }
 
-// Setup auto-hide controls
-function setupAutoHide() {
-    let hideTimeout;
-    const controls = document.getElementById('reader-controls');
-    const content = document.querySelector('.reader-content');
+// Setup interaction area (Scrubbing / Tapping)
+function setupInteractionArea() {
+    const contentArea = document.querySelector('.reader-content-area');
+    let isDragging = false;
+    let startX = 0;
+    let baseIndex = 0;
 
-    const showControls = () => {
-        controls.style.opacity = '1';
-        controls.style.pointerEvents = 'auto';
+    const handleStart = (e) => {
+        if (isPlaying) return;
+        isDragging = true;
+        startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        baseIndex = currentIndex;
+        document.getElementById('scrubber-overlay').classList.remove('hidden');
+        document.getElementById('scrubber-overlay').classList.add('visible');
+    };
 
-        clearTimeout(hideTimeout);
-        if (isPlaying) {
-            hideTimeout = setTimeout(() => {
-                controls.style.opacity = '0';
-                controls.style.pointerEvents = 'none';
-            }, settings.hideDelay * 1000);
+    const handleMove = (e) => {
+        if (!isDragging) return;
+        const currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const dx = currentX - startX;
+        const width = window.innerWidth;
+
+        // Halved again for precision (same as Android logic)
+        const total = currentBook.content.length;
+        const baseScrollRange = total * 0.006;
+        const delta = Math.floor((dx / width) * baseScrollRange);
+
+        const next = Math.max(0, Math.min(total - 1, baseIndex + delta));
+        if (next !== currentIndex) {
+            displayWord(next);
         }
     };
 
-    content.addEventListener('click', showControls);
-    content.addEventListener('touchstart', showControls);
+    const handleEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        document.getElementById('scrubber-overlay').classList.add('hidden');
+        document.getElementById('scrubber-overlay').classList.remove('visible');
+    };
 
-    showControls();
+    contentArea.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+
+    contentArea.addEventListener('touchstart', handleStart);
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchend', handleEnd);
+
+    // Tap to toggle controls
+    contentArea.addEventListener('click', (e) => {
+        if (!isDragging) {
+            toggleControls();
+        }
+    });
+}
+
+function toggleControls() {
+    const topBar = document.getElementById('reader-top-bar');
+    const bottomPanel = document.getElementById('reader-bottom-panel');
+    const isVisible = topBar.style.opacity !== '0';
+
+    const targetOpacity = isVisible ? '0' : '1';
+    const targetPointer = isVisible ? 'none' : 'auto';
+
+    topBar.style.opacity = targetOpacity;
+    topBar.style.pointerEvents = targetPointer;
+    bottomPanel.style.opacity = targetOpacity;
+    bottomPanel.style.pointerEvents = targetPointer;
+}
+
+// Full Text Modal logic
+function openFullTextModal() {
+    stopReading();
+    const modal = document.getElementById('full-text-modal');
+    modal.classList.remove('hidden');
+
+    const lang = settings.language || 'en';
+    document.getElementById('full-text-title').textContent = t('reader.fullText', lang);
+    document.getElementById('full-text-instruction').textContent = t('reader.fullTextInstruction', lang);
+
+    renderFullText();
+
+    // Scroll Sync
+    const chunkSize = 150;
+    const chunkIndex = Math.floor(currentIndex / chunkSize);
+    const body = document.getElementById('full-text-body');
+    const row = body.querySelector(`[data-chunk-index="${chunkIndex}"]`);
+    if (row) {
+        row.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
+}
+
+function closeFullTextModal() {
+    document.getElementById('full-text-modal').classList.add('hidden');
+}
+
+function renderFullText() {
+    const container = document.getElementById('full-text-body');
+    const words = currentBook.content || [];
+    const chunkSize = 150;
+    let html = '';
+
+    for (let i = 0; i < words.length; i += chunkSize) {
+        const chunkIndex = i / chunkSize;
+        const chunkWords = words.slice(i, i + chunkSize);
+
+        html += `<div class="chunk-row" data-chunk-index="${chunkIndex}">`;
+        html += chunkWords.map((word, idx) => {
+            const actualIndex = i + idx;
+            const isActive = actualIndex === currentIndex;
+            return `
+                <span class="full-text-word-btn ${isActive ? 'active' : ''}" 
+                      onclick="window.readerActions.jumpTo(${actualIndex})">
+                    ${escapeHtml(word)}
+                </span>
+            `;
+        }).join(' ');
+        html += `</div>`;
+    }
+
+    container.innerHTML = html;
+}
+
+window.readerActions = {
+    jumpTo: (index) => {
+        displayWord(index);
+        closeFullTextModal();
+    }
+};
+
+// Wake Lock API
+async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+        } catch (err) {
+            console.warn(`Wake Lock error: ${err.name}, ${err.message}`);
+        }
+    }
+}
+
+function releaseWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release().then(() => {
+            wakeLock = null;
+        });
+    }
 }
 
 // Escape HTML

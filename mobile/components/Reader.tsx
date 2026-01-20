@@ -375,13 +375,18 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const wordChunks = useMemo(() => {
         if (!book.content || !showFullText) return [];
-        const chunkSize = 200;
+        const chunkSize = 150; // Smaller chunk for better scroll accuracy
         const chunks = [];
         for (let i = 0; i < book.content.length; i += chunkSize) {
             chunks.push({ id: i.toString(), startIndex: i, words: book.content.slice(i, i + chunkSize) });
         }
         return chunks;
     }, [book.id, showFullText]);
+
+    const initialChunkIndex = useMemo(() => {
+        const chunkSize = 150;
+        return Math.floor(currentIndex / chunkSize);
+    }, [currentIndex]);
 
     return (
         <View style={[styles.container, { backgroundColor: themeColors.bg }]}>
@@ -453,10 +458,19 @@ export const Reader: React.FC<ReaderProps> = ({
                     <FlatList
                         data={wordChunks}
                         keyExtractor={item => item.id}
-                        initialNumToRender={5}
-                        windowSize={5}
+                        initialNumToRender={10}
+                        windowSize={10}
+                        initialScrollIndex={initialChunkIndex > 0 ? initialChunkIndex : undefined}
+                        getItemLayout={(_, index) => ({
+                            length: 220, // Estimated height of a chunk container (padding + wrap-around text)
+                            offset: 220 * index,
+                            index,
+                        })}
+                        onScrollToIndexFailed={(info) => {
+                            console.warn('Scroll to index failed:', info);
+                        }}
                         renderItem={({ item }) => (
-                            <View style={styles.chunkContainer}>
+                            <View style={[styles.chunkContainer, { minHeight: 200 }]}>
                                 {item.words.map((word: string, i: number) => {
                                     const actualIndex = item.startIndex + i;
                                     const isActive = actualIndex === currentIndex;
