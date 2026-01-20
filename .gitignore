@@ -8,6 +8,8 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+www/
+build/
 
 # Native
 .kotlin/
@@ -32,6 +34,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +42,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Android specific
+android/.gradle/
+android/app/build/
+android/captures/
+
+# iOS specific
+ios/DerivedData/
