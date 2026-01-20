@@ -1,0 +1,5 @@
+{
+  "name": "SwiftRead AI",
+  "description": "A minimalist speed-reading application that supports PDF and EPUB files with AI-powered insights and Optimal Recognition Point (ORP) rendering.",
+  "requestFramePermissions": []
+}
