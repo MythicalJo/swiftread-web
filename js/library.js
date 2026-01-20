@@ -125,15 +125,31 @@ function getSortedBooks() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Add book button
-    document.getElementById('add-book-btn').addEventListener('click', showAddBookMenu);
+    // Paste Text button
+    document.getElementById('paste-text-btn').addEventListener('click', showPasteModal);
 
-    // Sort select
-    document.getElementById('sort-select').addEventListener('change', (e) => {
-        sortBy = e.target.value;
-        storage.setSort(sortBy);
-        renderLibrary();
+    // Add book button
+    document.getElementById('add-book-btn').addEventListener('click', () => {
+        document.getElementById('file-input').click();
     });
+
+    // View mode buttons
+    document.querySelectorAll('.view-mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mode = btn.dataset.mode;
+            viewMode = mode;
+            storage.setViewMode(viewMode);
+
+            // Update active state
+            document.querySelectorAll('.view-mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            renderLibrary();
+        });
+    });
+
+    // Sort select button
+    document.getElementById('sort-select-btn').addEventListener('click', showSortModal);
 
     // Sort order button
     document.getElementById('sort-order-btn').addEventListener('click', () => {
@@ -143,27 +159,92 @@ function setupEventListeners() {
         renderLibrary();
     });
 
-    // View mode button
-    document.getElementById('view-mode-btn').addEventListener('click', () => {
-        const modes = ['default', 'list', 'grid'];
-        const currentIndex = modes.indexOf(viewMode);
-        viewMode = modes[(currentIndex + 1) % modes.length];
-        storage.setViewMode(viewMode);
-        renderLibrary();
-    });
-
     // File input
     document.getElementById('file-input').addEventListener('change', handleFileUpload);
+
+    // Paste modal
+    document.getElementById('close-paste-btn').addEventListener('click', hidePasteModal);
+    document.getElementById('paste-submit-btn').addEventListener('click', handlePasteSubmit);
+
+    // Click outside modal to close
+    document.getElementById('paste-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'paste-modal') {
+            hidePasteModal();
+        }
+    });
 }
 
-// Show add book menu
-function showAddBookMenu() {
-    const menu = confirm(t('library.uploadFile', settings.language) + ' or ' + t('library.pasteText', settings.language) + '?\n\nOK = Upload File\nCancel = Paste Text');
+// Show paste modal
+function showPasteModal() {
+    document.getElementById('paste-modal').classList.remove('hidden');
+    document.getElementById('paste-title-input').value = '';
+    document.getElementById('paste-content-input').value = '';
+    document.getElementById('paste-title-input').focus();
+}
 
-    if (menu) {
-        document.getElementById('file-input').click();
-    } else {
-        showPasteTextDialog();
+// Hide paste modal
+function hidePasteModal() {
+    document.getElementById('paste-modal').classList.add('hidden');
+}
+
+// Handle paste submit
+function handlePasteSubmit() {
+    const title = document.getElementById('paste-title-input').value.trim();
+    const content = document.getElementById('paste-content-input').value.trim();
+
+    if (!content) {
+        alert(t('common.pasteErrorBody', settings.language));
+        return;
+    }
+
+    try {
+        const words = content.split(/\s+/).filter(w => w);
+        if (words.length === 0) return;
+
+        const newBook = {
+            id: Math.random().toString(36).substr(2, 9),
+            title: title || 'Pasted Text',
+            author: '',
+            content: words,
+            progress: 0,
+            hasBeenFinished: false,
+            type: 'text',
+            addedAt: Date.now(),
+            lastOpenedAt: Date.now()
+        };
+
+        books.unshift(newBook);
+        storage.setLibrary(books);
+        renderLibrary();
+        hidePasteModal();
+
+    } catch (e) {
+        alert(t('common.pasteErrorBody', settings.language));
+    }
+}
+
+// Show sort modal
+function showSortModal() {
+    const lang = settings.language || 'en';
+    const options = [
+        { id: 'recent', label: t('library.sortRecent', lang) },
+        { id: 'added', label: t('library.sortAdded', lang) },
+        { id: 'az', label: t('library.sortAz', lang) },
+        { id: 'finished', label: t('library.sortFinished', lang) },
+        { id: 'unfinished', label: t('library.sortUnfinished', lang) }
+    ];
+
+    const selected = options.findIndex(opt => opt.id === sortBy);
+    const choice = prompt(options.map((opt, i) => `${i + 1}. ${opt.label}`).join('\n') + '\n\nEnter number (1-5):', selected + 1);
+
+    if (choice) {
+        const index = parseInt(choice) - 1;
+        if (index >= 0 && index < options.length) {
+            sortBy = options[index].id;
+            storage.setSort(sortBy);
+            document.getElementById('sort-label').textContent = options[index].label;
+            renderLibrary();
+        }
     }
 }
 
@@ -232,39 +313,6 @@ async function handleFileUpload(e) {
     renderLibrary();
 }
 
-// Show paste text dialog
-function showPasteTextDialog() {
-    const title = prompt(t('library.docTitleLabel', settings.language), '');
-    if (!title) return;
-
-    const text = prompt(t('library.contentLabel', settings.language), '');
-    if (!text) return;
-
-    try {
-        const words = text.trim().split(/\s+/);
-        if (words.length === 0) return;
-
-        const newBook = {
-            id: Math.random().toString(36).substr(2, 9),
-            title: title || 'Pasted Text',
-            author: '',
-            content: words,
-            progress: 0,
-            hasBeenFinished: false,
-            type: 'text',
-            addedAt: Date.now(),
-            lastOpenedAt: Date.now()
-        };
-
-        books.unshift(newBook);
-        storage.setLibrary(books);
-        renderLibrary();
-
-    } catch (e) {
-        alert(t('common.pasteErrorBody', settings.language));
-    }
-}
-
 // Library actions (exposed globally for onclick handlers)
 window.libraryActions = {
     deleteBook: (id) => {
@@ -299,27 +347,26 @@ function updateLibraryTranslations() {
     const lang = settings.language || 'en';
 
     document.getElementById('library-title').textContent = t('library.title', lang);
-    document.getElementById('add-book-text').textContent = t('library.addBook', lang);
+    document.getElementById('library-subtitle').textContent = lang === 'es' ? 'Selecciona o importa un libro' : 'Select a book or import a new one';
+    document.getElementById('paste-text-label').textContent = t('library.pasteText', lang);
+    document.getElementById('add-book-text').textContent = t('library.uploadFile', lang);
     document.getElementById('empty-title').textContent = t('library.emptyState', lang);
     document.getElementById('empty-subtitle').textContent = t('library.emptyStateSub', lang);
 
-    // Update sort select options
-    const sortSelect = document.getElementById('sort-select');
-    sortSelect.options[0].text = t('library.sortRecent', lang);
-    sortSelect.options[1].text = t('library.sortAdded', lang);
-    sortSelect.options[2].text = t('library.sortAz', lang);
-    sortSelect.options[3].text = t('library.sortFinished', lang);
-    sortSelect.options[4].text = t('library.sortUnfinished', lang);
-    sortSelect.value = sortBy;
+    // Update paste modal
+    document.getElementById('paste-modal-title').textContent = t('library.pasteTitle', lang);
+    document.getElementById('paste-title-label').textContent = t('library.docTitleLabel', lang);
+    document.getElementById('paste-content-label').textContent = t('library.contentLabel', lang);
+    document.getElementById('paste-submit-text').textContent = t('library.startReading', lang);
 }
 
 // Update sort order icon
 function updateSortOrderIcon() {
     const icon = document.getElementById('sort-order-icon');
     if (sortOrder === 'asc') {
-        icon.innerHTML = '<path d="M3 18h18M3 12h12M3 6h6"></path>';
+        icon.innerHTML = '<line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline>';
     } else {
-        icon.innerHTML = '<path d="M3 6h18M3 12h12M3 18h6"></path>';
+        icon.innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline>';
     }
 }
 
