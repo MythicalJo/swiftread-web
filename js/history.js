@@ -65,18 +65,34 @@ export function renderHistory() {
             </div>
         </div>
         
-        <div style="margin-top: 32px; padding: 20px; background-color: var(--card-bg); border-radius: var(--radius-md); text-align: center;">
-            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">${t('history.donateTitle', lang)}</h3>
-            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">${getRandomDonationPhrase(lang)}</p>
-            <a href="https://www.buymeacoffee.com/yourusername" target="_blank" rel="noopener" class="primary-btn" style="display: inline-flex; text-decoration: none;">
-                ☕ ${t('history.donateTitle', lang)}
+        <div class="donation-card glass-card">
+            <p class="flavor-text">${getRandomDonationPhrase(lang)}</p>
+            <a href="https://ko-fi.com/myth_jo" target="_blank" rel="noopener" class="donate-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6F4E37" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                    <line x1="6" y1="1" x2="6" y2="4"></line>
+                    <line x1="10" y1="1" x2="10" y2="4"></line>
+                    <line x1="14" y1="1" x2="14" y2="4"></line>
+                </svg>
+                <span>${t('history.donateTitle', lang)} (Ko-fi)</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: auto; opacity: 0.5;">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
             </a>
         </div>
         
-        <div id="hall-of-fame" style="margin-top: 24px;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">${t('history.hallOfFameTitle', lang)}</h3>
-            <div id="hall-of-fame-content" style="padding: 20px; background-color: var(--card-bg); border-radius: var(--radius-md); text-align: center; color: var(--text-secondary);">
-                Loading supporters...
+        <div id="hall-of-fame" class="hall-of-fame glass-card hidden">
+            <div class="hof-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFD700">
+                    <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"></path>
+                </svg>
+                <h3>${t('history.hallOfFameTitle', lang)}</h3>
+            </div>
+            <div id="hall-of-fame-list" class="supporter-list">
+                <!-- Supporters injected here -->
             </div>
         </div>
     `;
@@ -116,31 +132,29 @@ function getRandomDonationPhrase(lang) {
 
 // Load Hall of Fame
 async function loadHallOfFame() {
-    const content = document.getElementById('hall-of-fame-content');
-    if (!content) return;
+    const list = document.getElementById('hall-of-fame-list');
+    const container = document.getElementById('hall-of-fame');
+    if (!list) return;
 
     try {
-        const response = await fetch('https://raw.githubusercontent.com/yourusername/swiftread-supporters/main/supporters.json');
+        const response = await fetch('https://gist.githubusercontent.com/MythicalJo/493d770c9e6a6d98ae98bdbe6670f502/raw/vip-users.json');
 
-        if (!response.ok) {
-            throw new Error('Failed to load');
-        }
+        if (!response.ok) throw new Error('Failed to load');
 
         const supporters = await response.json();
 
-        if (supporters.length === 0) {
-            content.innerHTML = '<p style="color: var(--text-secondary);">No supporters yet. Be the first!</p>';
-            return;
+        if (Array.isArray(supporters) && supporters.length > 0) {
+            container.classList.remove('hidden');
+            list.innerHTML = supporters.map((supporter, idx) => `
+                <div class="supporter-row">
+                    <span class="supporter-name">${escapeHtml(supporter.name)}</span>
+                    <span class="year-badge">${escapeHtml(supporter.year)}</span>
+                </div>
+            `).join('');
         }
-
-        content.innerHTML = supporters.map(supporter => `
-            <div style="display: inline-block; margin: 8px; padding: 8px 16px; background-color: var(--border-color); border-radius: var(--radius-sm); font-weight: 600;">
-                ${escapeHtml(supporter.name)}
-            </div>
-        `).join('');
-
     } catch (error) {
-        content.innerHTML = '<p style="color: var(--text-secondary);">Unable to load supporters list.</p>';
+        console.warn('Hall of Fame load failed:', error);
+        container.classList.add('hidden');
     }
 }
 
