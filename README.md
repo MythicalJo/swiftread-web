@@ -13,7 +13,7 @@ SwiftRead is optimized as a **Progressive Web App (PWA)**. You don't need the Ap
 
 1.  Open [SwiftRead Web](https://MythicalJo.github.io/swiftread-web/) in **Safari**.
 2.  Tap the **Share** button (box with an arrow ↑).
-3.  Scroll down and tap **"Add to Home Screen"** (Agregar a Inicio).
+3.  Scroll down and tap **"Add to Home Screen"**.
 4.  Launch it from your home screen for a full-screen, native experience.
 
 ### 🤖 Android
