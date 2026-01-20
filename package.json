@@ -1,7 +1,7 @@
 {
   "name": "swift-reader",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "mobile/index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -33,6 +33,7 @@
     "text-encoding": "^0.7.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2"
   },
