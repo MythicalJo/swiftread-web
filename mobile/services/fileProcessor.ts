@@ -9,11 +9,15 @@ let pdfjsLib: any = null;
 async function ensurePdfLib() {
     try {
         if (!pdfjsLib) {
-            pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
+            if (Platform.OS === 'web') {
+                pdfjsLib = require('pdfjs-dist/build/pdf');
+            } else {
+                pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
+            }
             if (pdfjsLib.GlobalWorkerOptions) {
                 if (Platform.OS === 'web') {
-                    // Use a CDN worker for the web PWA to ensure it's always available and correct version
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+                    const version = pdfjsLib.version || '2.16.105';
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
                 } else {
                     pdfjsLib.GlobalWorkerOptions.workerSrc = '';
                     pdfjsLib.GlobalWorkerOptions.disableWorker = true;
@@ -72,7 +76,6 @@ async function processPDFFromBuffer(buffer: Buffer, filename: string): Promise<{
     try {
         const loadingTask = pdfjsLib.getDocument({
             data: new Uint8Array(buffer),
-            disableWorker: true,
             verbosity: 0,
             stopAtErrors: false,
             disableFontFace: true,

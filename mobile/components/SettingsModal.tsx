@@ -234,57 +234,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 </View>
                             )}
 
-                            <View style={[styles.settingRow, { marginTop: 24 }]}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.settingName, { color: theme.text }]}>{t.showClock}</Text>
-                                    <Text style={[styles.settingDesc, { color: theme.subText }]}>{t.showClockDesc}</Text>
-                                </View>
-                                <Switch
-                                    value={settings.showClock}
-                                    onValueChange={(v) => updateSetting('showClock', v)}
-                                    trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
-                                    thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
-                                    {...(Platform.OS === 'web' ? {
-                                        activeTrackColor: theme.accent,
-                                        activeThumbColor: '#fff'
-                                    } : {})}
-                                />
-                            </View>
-
-                            <View style={[styles.settingRow, { marginTop: 12 }]}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.settingName, { color: theme.text }]}>{t.showBattery}</Text>
-                                    <Text style={[styles.settingDesc, { color: theme.subText }]}>{t.showBatteryDesc}</Text>
-                                </View>
-                                <Switch
-                                    value={settings.showBattery}
-                                    onValueChange={(v) => updateSetting('showBattery', v)}
-                                    trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
-                                    thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
-                                    {...(Platform.OS === 'web' ? {
-                                        activeTrackColor: theme.accent,
-                                        activeThumbColor: '#fff'
-                                    } : {})}
-                                />
-                            </View>
-
-                            <View style={[styles.settingRow, { marginTop: 12 }]}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.settingName, { color: theme.text }]}>{t.use24Hour}</Text>
-                                    <Text style={[styles.settingDesc, { color: theme.subText }]}>{t.use24HourDesc}</Text>
-                                </View>
-                                <Switch
-                                    value={settings.use24HourClock}
-                                    onValueChange={(v) => updateSetting('use24HourClock', v)}
-                                    trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
-                                    thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
-                                    {...(Platform.OS === 'web' ? {
-                                        activeTrackColor: theme.accent,
-                                        activeThumbColor: '#fff'
-                                    } : {})}
-                                />
-                            </View>
-
                             <View style={[styles.settingColumn, { marginTop: 24 }]}>
                                 <Text style={[styles.settingName, { color: theme.text }]}>{t.appLanguage}</Text>
                                 <Text style={[styles.settingDesc, { color: theme.subText }]}>Current selection: {settings.language === 'en' ? 'English' : 'Spanish'}</Text>

@@ -28,9 +28,6 @@ export interface ReaderSettings {
   hideDelay: number; // seconds
   rewindAmount: number; // number of words
   wps: number;
-  showClock: boolean;
-  showBattery: boolean;
-  use24HourClock: boolean;
   language: 'en' | 'es';
 }
 

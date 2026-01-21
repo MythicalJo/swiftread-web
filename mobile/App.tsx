@@ -33,9 +33,6 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   hideDelay: 3,
   rewindAmount: 10,
   wps: 300,
-  showClock: true,
-  showBattery: true,
-  use24HourClock: false,
   language: 'en'
 };
 
@@ -490,12 +487,6 @@ export default function App() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bg }]}>
       <StatusBar hidden />
-      <StatusOverlay
-        theme={themeColors}
-        showClock={settings.showClock}
-        showBattery={settings.showBattery}
-        use24HourClock={settings.use24HourClock}
-      />
       {selectedBook ? (
         <Reader
           book={selectedBook}
