@@ -194,6 +194,7 @@ export default function App() {
     try {
       if (!hasLoaded) return; // Prevent overwriting with empty state
       setBooks(updatedBooks);
+      booksRef.current = updatedBooks; // Sync ref immediately for batch processing
       await AsyncStorage.setItem('swiftread_library', JSON.stringify(updatedBooks));
     } catch (e) {
       console.error("Save Error", e);
@@ -282,8 +283,10 @@ export default function App() {
     }
 
     if (pdfQueue.length === 0) {
-      const anyNonPdf = assetsToProcess.some(a => !a.name.toLowerCase().endsWith('.pdf'));
-      if (anyNonPdf || assetsToProcess.length === 0) {
+      // On web, if all files were processed (no queue used), we MUST stop uploading
+      // On mobile, if there were no PDFs, we stop uploading.
+      const isWeb = Platform.OS === 'web';
+      if (isWeb || assetsToProcess.every(a => !a.name.toLowerCase().endsWith('.pdf'))) {
         setIsUploading(false);
         if (failCount > 0) Alert.alert("Import Finished", `Imported ${successCount}. ${failCount} failed.`);
       }
@@ -296,8 +299,9 @@ export default function App() {
 
     const title = asset.name.replace(/\.[^/.]+$/, "");
     if (booksRef.current.some(b => b.title === title)) {
-      setPdfQueue(prev => prev.slice(1));
-      if (pdfQueue.length === 1) setIsUploading(false);
+      const nextQueue = pdfQueue.slice(1);
+      setPdfQueue(nextQueue);
+      if (nextQueue.length === 0) setIsUploading(false);
       return;
     }
 
