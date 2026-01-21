@@ -642,18 +642,20 @@ export default function App() {
           )}
         </View>
       )}
-      <View style={{ height: 0, width: 0, opacity: 0 }}>
-        <PdfParser
-          pdfBase64={pdfQueue[0]?.pdfBase64}
-          onData={onPdfData}
-          onError={(err) => {
-            console.error(err);
-            setPdfQueue(prev => prev.slice(1));
-            if (pdfQueue.length <= 1) setIsUploading(false);
-            Alert.alert("PDF Error", "Failed to parse this PDF.");
-          }}
-        />
-      </View>
+      {Platform.OS !== 'web' && pdfQueue.length > 0 && (
+        <View style={{ height: 0, width: 0, opacity: 0 }}>
+          <PdfParser
+            pdfBase64={pdfQueue[0]?.pdfBase64}
+            onData={onPdfData}
+            onError={(err) => {
+              console.error(err);
+              setPdfQueue(prev => prev.slice(1));
+              if (pdfQueue.length <= 1) setIsUploading(false);
+              Alert.alert("PDF Error", "Failed to parse this PDF.");
+            }}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 }

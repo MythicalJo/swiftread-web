@@ -31,6 +31,10 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
+      "display": "standalone",
+      "themeColor": "#121212",
+      "backgroundColor": "#121212",
+      "lang": "en",
       "meta": {
         "apple-mobile-web-app-capable": "yes",
         "apple-mobile-web-app-status-bar-style": "black-translucent",
