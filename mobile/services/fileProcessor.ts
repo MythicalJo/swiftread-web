@@ -10,23 +10,35 @@ async function ensurePdfLib() {
     try {
         if (!pdfjsLib) {
             if (Platform.OS === 'web') {
+                console.log("Checking for global pdfjsLib...");
                 // @ts-ignore
-                pdfjsLib = window.pdfjsLib || require('pdfjs-dist/build/pdf');
+                pdfjsLib = window.pdfjsLib;
+                if (!pdfjsLib) {
+                    console.log("Global pdfjsLib not found, falling back to require...");
+                    pdfjsLib = require('pdfjs-dist/build/pdf');
+                }
             } else {
                 pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
             }
-            if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-                if (Platform.OS === 'web') {
-                    const version = pdfjsLib.version || '2.16.105';
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
-                } else {
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-                    pdfjsLib.GlobalWorkerOptions.disableWorker = true;
+
+            if (pdfjsLib) {
+                console.log("PDF engine found, version:", pdfjsLib.version);
+                if (pdfjsLib.GlobalWorkerOptions) {
+                    if (Platform.OS === 'web') {
+                        const version = pdfjsLib.version || '2.16.105';
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
+                        console.log("Set web worker source:", pdfjsLib.GlobalWorkerOptions.workerSrc);
+                    } else {
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+                        pdfjsLib.GlobalWorkerOptions.disableWorker = true;
+                    }
                 }
+            } else {
+                throw new Error("PDF engine not found.");
             }
         }
     } catch (err) {
-        console.error("PDF library load error:", err);
+        console.error("PDF Library Error Details:", err);
         throw new Error("PDF engine failed to start.");
     }
 }

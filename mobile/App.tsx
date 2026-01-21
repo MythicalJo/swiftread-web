@@ -505,7 +505,11 @@ export default function App() {
           onUpdateProgress={updateProgress}
         />
       ) : (
-        <View style={{ flex: 1 }} {...tabPanResponder.panHandlers}>
+        <Animated.View
+          style={{ flex: 1 }}
+          {...tabPanResponder.panHandlers}
+          pointerEvents={(selectedBookId || showGlobalSettings) ? 'none' : 'auto'}
+        >
           <Animated.View style={{
             flex: 1,
             flexDirection: 'row',
@@ -639,7 +643,7 @@ export default function App() {
               onClose={() => setShowGlobalSettings(false)}
             />
           )}
-        </View>
+        </Animated.View>
       )}
       {Platform.OS !== 'web' && pdfQueue.length > 0 && (
         <View style={{ height: 0, width: 0, opacity: 0 }}>

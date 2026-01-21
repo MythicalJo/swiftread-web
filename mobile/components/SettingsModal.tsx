@@ -333,21 +333,34 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'flex-end',
+        zIndex: 1000,
+        ...Platform.select({
+            web: {
+                pointerEvents: 'auto',
+            }
+        })
     },
     content: {
-        borderTopLeftRadius: 40,
-        borderTopRightRadius: 40,
-        paddingHorizontal: 24,
-        paddingTop: 32,
-        paddingBottom: 40,
-        maxHeight: '85%',
+        height: '92%',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -10 },
         shadowOpacity: 0.2,
         shadowRadius: 20,
         elevation: 20,
+        ...Platform.select({
+            web: {
+                maxWidth: 600,
+                alignSelf: 'center',
+                width: '100%',
+                zIndex: 1001,
+                pointerEvents: 'auto',
+            }
+        })
     },
     header: {
         flexDirection: 'row',
