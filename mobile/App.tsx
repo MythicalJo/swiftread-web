@@ -80,7 +80,6 @@ export default function App() {
 
   // Persistence
   useEffect(() => {
-    console.log("App Component Mounted");
     loadData();
     // Enable immersive mode
     const enableImmersive = async () => {
