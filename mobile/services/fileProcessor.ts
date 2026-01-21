@@ -144,17 +144,26 @@ async function extractFromPdf(pdf: any, filename: string): Promise<{ title: stri
         if (i % 50 === 0) console.log(`Processing page ${i}/${maxPages}...`);
         try {
             const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+
+            // If we have no items on the page, skip it
+            if (!textContent.items || textContent.items.length === 0) {
+                page.cleanup();
+                continue;
+            }
+
             const viewport = page.getViewport({ scale: 1.0 });
             const height = viewport.height;
-            const headerThreshold = height * 0.93;
-            const footerThreshold = height * 0.07;
+            // More conservative thresholds (only skip if extremely close to edge)
+            const headerThreshold = height * 0.96;
+            const footerThreshold = height * 0.04;
 
-            const textContent = await page.getTextContent();
             for (const item of (textContent.items as any[])) {
-                const y = item.transform[5];
-                if (y > headerThreshold || y < footerThreshold) continue;
                 if (item.str) {
-                    if (/^\s*\d+\s*$/.test(item.str) || /^\s*Page\s+\d+\s*$/i.test(item.str)) continue;
+                    const y = item.transform[5];
+                    // Skip if it looks like a lone page number or is in the extreme margin
+                    if ((y > headerThreshold || y < footerThreshold) && /^\s*\d+\s*$/.test(item.str)) continue;
+
                     const chunks = item.str.trim().split(/\s+/);
                     for (const w of chunks) { if (w) words.push(w); }
                 }

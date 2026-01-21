@@ -91,8 +91,8 @@ export default function App() {
             console.log("--- PWA DIAGNOSTICS START ---");
             // @ts-ignore
             console.log("Checking window.pdfjsLib:", typeof window.pdfjsLib);
-            // Dummy 1x1 pixel PDF
-            const dummy = "JVBERi0xLjcKMSAwIG9iaiA8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iaiA8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iaiA8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL01lZGlhQm94WzAgMCA1IDVdL1Jlc291cmNlczw8Pj4+PgplbmRvYmoKdHJhaWxlciA8PC9Sb290IDEgMCBSL1NpemUgND4+CiUlRU9G";
+            // Dummy PDF with text "SwiftRead"
+            const dummy = "JVBERi0xLjQKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PmVuZG9iagozIDAgb2JqPDwvVHlwZS9QYWdlL1BhcmVudCAyIDAgUi9NZWRpYUJveFswIDAgNjEyIDc5Ml0vUmVzb3VyY2VzPDwvRm9udDw8L0YxIDQgMCBSPj4+Pi9Db250ZW50cyA1IDAgUj4+ZW5kb2JqCjQgMCBvYmo8PC9UeXBlL0ZvbnQvU3VidHlwZS9UeXBlMS9CYXNlRm9udC9IZWx2ZXRpY2E+PmVuZG9iago1IDAgb2JqPDwvTGVuZ3RoIDQ0Pj5zdHJlYW0KQlQgL0YxIDI0IFRmIDcwIDcwMCBUZCAoU3dpZnRSZWFkKSBUaiBFVAplbmRzdHJlYW0KZW5kb2JqCnRyYWlsZXI8PC9Sb290IDEgMCBSL1NpemUgNj4+CiUlRU9G";
             await processFile({ name: 'diag.pdf', uri: `data:application/pdf;base64,${dummy}` });
             console.log("--- PWA DIAGNOSTICS SUCCESS ---");
           } catch (e) {
