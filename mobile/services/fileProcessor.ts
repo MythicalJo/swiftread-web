@@ -10,11 +10,14 @@ async function ensurePdfLib() {
     try {
         if (!pdfjsLib) {
             if (Platform.OS === 'web') {
-                console.log("Checking for global pdfjsLib...");
+                console.log("Searching for pdfjsLib in window...");
                 // @ts-ignore
-                pdfjsLib = window.pdfjsLib;
-                if (!pdfjsLib) {
-                    console.log("Global pdfjsLib not found, falling back to require...");
+                const globalLib = window.pdfjsLib;
+                if (globalLib) {
+                    console.log("Found global pdfjsLib! Version:", globalLib.version);
+                    pdfjsLib = globalLib;
+                } else {
+                    console.log("Global pdfjsLib NOT found, attempting to require local fallback...");
                     pdfjsLib = require('pdfjs-dist/build/pdf');
                 }
             } else {
@@ -22,24 +25,24 @@ async function ensurePdfLib() {
             }
 
             if (pdfjsLib) {
-                console.log("PDF engine found, version:", pdfjsLib.version);
+                console.log("PDF engine confirmed:", pdfjsLib.version);
                 if (pdfjsLib.GlobalWorkerOptions) {
                     if (Platform.OS === 'web') {
                         const version = pdfjsLib.version || '2.16.105';
                         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
-                        console.log("Set web worker source:", pdfjsLib.GlobalWorkerOptions.workerSrc);
+                        console.log("Configured workerSrc:", pdfjsLib.GlobalWorkerOptions.workerSrc);
                     } else {
                         pdfjsLib.GlobalWorkerOptions.workerSrc = '';
                         pdfjsLib.GlobalWorkerOptions.disableWorker = true;
                     }
                 }
             } else {
-                throw new Error("PDF engine not found.");
+                throw new Error("PDF engine could not be initialized.");
             }
         }
     } catch (err) {
-        console.error("PDF Library Error Details:", err);
-        throw new Error("PDF engine failed to start.");
+        console.error("CRITICAL: PDF Library initialization failed:", err);
+        throw new Error("System error: PDF engine failed. Please reload the page.");
     }
 }
 
@@ -48,10 +51,23 @@ export async function processFile(asset: any): Promise<{ title: string; content:
 
     try {
         if (Platform.OS === 'web') {
-            console.log("Web processing started for:", asset.name);
-            const response = await fetch(asset.uri);
-            const arrayBuffer = await response.arrayBuffer();
-            console.log("Buffer loaded, size:", arrayBuffer.byteLength);
+            console.log("Web/PWA processing started for:", asset.name);
+            let arrayBuffer: ArrayBuffer;
+            try {
+                if (asset.file instanceof File || (asset.file && typeof asset.file.arrayBuffer === 'function')) {
+                    console.log("Using direct File object arrayBuffer");
+                    arrayBuffer = await asset.file.arrayBuffer();
+                } else {
+                    console.log("Fetching from URI:", asset.uri);
+                    const response = await fetch(asset.uri);
+                    arrayBuffer = await response.arrayBuffer();
+                }
+            } catch (loadErr) {
+                console.error("Failed to load file data:", loadErr);
+                throw new Error("Could not read file data. Please try again.");
+            }
+
+            console.log("Data loaded, byteLength:", arrayBuffer.byteLength);
 
             if (extension === 'pdf') {
                 await ensurePdfLib();
@@ -89,21 +105,28 @@ export async function processFile(asset: any): Promise<{ title: string; content:
 async function processPDFFromBuffer(data: ArrayBuffer | Buffer, filename: string): Promise<{ title: string; content: string[]; cover?: string }> {
     let pdf: any = null;
     try {
-        console.log("Starting PDF getDocument...");
+        console.log("Initializing PDF engine with data...");
+        const uint8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+
+        // Use a timeout for the loading task to prevent indefinite hangs
         const loadingTask = pdfjsLib.getDocument({
-            data: data instanceof ArrayBuffer ? new Uint8Array(data) : data,
-            verbosity: 1, // Show errors in console
+            data: uint8,
+            verbosity: 1,
             stopAtErrors: false,
             disableFontFace: true,
             cMapPacked: true
         });
 
-        pdf = await loadingTask.promise;
-        console.log("PDF loaded, numPages:", pdf.numPages);
+        pdf = await Promise.race([
+            loadingTask.promise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error("PDF loading timed out (30s)")), 30000))
+        ]);
+
+        console.log("PDF engine ready. Pages:", pdf.numPages);
         const result = await extractFromPdf(pdf, filename);
         return result;
     } catch (err) {
-        console.error("Internal PDF Error:", err);
+        console.error("PDF.js Processing Error:", err);
         throw new Error(`PDF Error: ${(err as Error).message}`);
     } finally {
         if (pdf) {
@@ -115,29 +138,41 @@ async function processPDFFromBuffer(data: ArrayBuffer | Buffer, filename: string
 async function extractFromPdf(pdf: any, filename: string): Promise<{ title: string; content: string[]; cover?: string }> {
     const words: string[] = [];
     const maxPages = Math.min(pdf.numPages, 1200);
+    console.log(`Extracting text from ${maxPages} pages...`);
 
     for (let i = 1; i <= maxPages; i++) {
-        let page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.0 });
-        const height = viewport.height;
-        const headerThreshold = height * 0.93;
-        const footerThreshold = height * 0.07;
+        if (i % 50 === 0) console.log(`Processing page ${i}/${maxPages}...`);
+        try {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 1.0 });
+            const height = viewport.height;
+            const headerThreshold = height * 0.93;
+            const footerThreshold = height * 0.07;
 
-        const textContent = await page.getTextContent();
-        for (const item of (textContent.items as any[])) {
-            const y = item.transform[5];
-            if (y > headerThreshold || y < footerThreshold) continue;
-            if (item.str) {
-                if (/^\s*\d+\s*$/.test(item.str) || /^\s*Page\s+\d+\s*$/i.test(item.str)) continue;
-                const chunks = item.str.trim().split(/\s+/);
-                for (const w of chunks) { if (w) words.push(w); }
+            const textContent = await page.getTextContent();
+            for (const item of (textContent.items as any[])) {
+                const y = item.transform[5];
+                if (y > headerThreshold || y < footerThreshold) continue;
+                if (item.str) {
+                    if (/^\s*\d+\s*$/.test(item.str) || /^\s*Page\s+\d+\s*$/i.test(item.str)) continue;
+                    const chunks = item.str.trim().split(/\s+/);
+                    for (const w of chunks) { if (w) words.push(w); }
+                }
             }
+            page.cleanup();
+        } catch (pageErr) {
+            console.warn(`Error on page ${i}, skipping:`, pageErr);
         }
-        page.cleanup();
-        if (words.length > 600000) break;
+        if (words.length > 600000) {
+            console.log("Word limit reached (600k), stopping extraction.");
+            break;
+        }
     }
 
-    if (words.length === 0) throw new Error("No readable text found in PDF.");
+    console.log("Extraction complete. Total words:", words.length);
+    if (words.length === 0) {
+        throw new Error("No readable text found. This PDF might be a scanned image or restricted.");
+    }
     return { title: filename.replace('.pdf', ''), content: words };
 }
 

@@ -84,7 +84,23 @@ export default function App() {
     loadData();
     // Enable immersive mode
     const enableImmersive = async () => {
-      if (Platform.OS === 'web') return;
+      if (Platform.OS === 'web') {
+        // Diagnostic check for PDF support
+        setTimeout(async () => {
+          try {
+            console.log("--- PWA DIAGNOSTICS START ---");
+            // @ts-ignore
+            console.log("Checking window.pdfjsLib:", typeof window.pdfjsLib);
+            // Dummy 1x1 pixel PDF
+            const dummy = "JVBERi0xLjcKMSAwIG9iaiA8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PgplbmRvYmoKMiAwIG9iaiA8PC9UeXBlL1BhZ2VzL0tpZHNbMyAwIFJdL0NvdW50IDE+PgplbmRvYmoKMyAwIG9iaiA8PC9UeXBlL1BhZ2UvUGFyZW50IDIgMCBSL01lZGlhQm94WzAgMCA1IDVdL1Jlc291cmNlczw8Pj4+PgplbmRvYmoKdHJhaWxlciA8PC9Sb290IDEgMCBSL1NpemUgND4+CiUlRU9G";
+            await processFile({ name: 'diag.pdf', uri: `data:application/pdf;base64,${dummy}` });
+            console.log("--- PWA DIAGNOSTICS SUCCESS ---");
+          } catch (e) {
+            console.error("--- PWA DIAGNOSTICS FAILED ---", e);
+          }
+        }, 3000);
+        return;
+      }
       try {
         await NavigationBar.setVisibilityAsync('hidden');
         await NavigationBar.setBehaviorAsync('inset-touch');
