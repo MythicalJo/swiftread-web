@@ -7,55 +7,34 @@ import { Buffer } from 'buffer';
 let pdfjsLib: any = null;
 
 async function ensurePdfLib() {
-    try {
-        if (!pdfjsLib) {
-            if (Platform.OS === 'web') {
-                // @ts-ignore
-                if (!window.pdfjsLib) {
-                    console.log("PDF.js missing. Injecting dynamically...");
-                    await new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
-                        script.onload = () => {
-                            console.log("PDF.js injected successfully.");
-                            resolve(true);
-                        };
-                        script.onerror = (e) => {
-                            console.error("PDF.js injection failed.", e);
-                            reject(e);
-                        };
-                        document.head.appendChild(script);
-                    });
-                }
+    if (pdfjsLib) return;
 
-                // @ts-ignore
-                pdfjsLib = window.pdfjsLib;
-                if (!pdfjsLib) {
-                    console.log("Global failed, trying require fallback...");
-                    pdfjsLib = require('pdfjs-dist/build/pdf');
-                }
-            } else {
-                pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
-            }
-
-            if (pdfjsLib) {
-                console.log("PDF Engine initialized. Version:", pdfjsLib.version);
-                if (pdfjsLib.GlobalWorkerOptions) {
-                    if (Platform.OS === 'web') {
-                        const version = pdfjsLib.version || '2.16.105';
-                        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
-                    } else {
-                        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-                        pdfjsLib.GlobalWorkerOptions.disableWorker = true;
-                    }
-                }
-            } else {
-                throw new Error("Initialization failed.");
-            }
+    if (Platform.OS === 'web') {
+        const win = window as any;
+        // Wait briefly for the global script to initialize if it hasn't yet
+        if (!win.pdfjsLib) {
+            console.log("Waiting for global PDF.js...");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
-    } catch (err) {
-        console.error("PDF Library Error:", err);
-        throw new Error("PDF engine failed. Please check your connection.");
+
+        if (win.pdfjsLib) {
+            pdfjsLib = win.pdfjsLib;
+            if (pdfjsLib.GlobalWorkerOptions) {
+                const version = pdfjsLib.version || '2.16.105';
+                pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
+            }
+            console.log("PDF Engine linked successfully.");
+        } else {
+            // Fallback: This is critically bad if the CDN script failed to load
+            throw new Error("Critical: PDF.js script header failed to load. Please refresh.");
+        }
+    } else {
+        try {
+            pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
+            pdfjsLib.GlobalWorkerOptions.disableWorker = true;
+        } catch (e) {
+            throw new Error("Native PDF init failed: " + e);
+        }
     }
 }
 
