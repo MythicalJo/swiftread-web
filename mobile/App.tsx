@@ -134,10 +134,11 @@ export default function App() {
       onPanResponderRelease: (_, gestureState) => {
         if (selectedBookId) return;
         const tab = currentTabRef.current;
-        if (gestureState.dx > 40) { // Swipe Right -> Go Left
+        const threshold = 40;
+        if (gestureState.dx > threshold) { // Swipe Right -> Go Left
           if (tab === 'categories') switchTab('library');
           else if (tab === 'history') switchTab('categories');
-        } else if (gestureState.dx < -40) { // Swipe Left -> Go Right
+        } else if (gestureState.dx < -threshold) { // Swipe Left -> Go Right
           if (tab === 'library') switchTab('categories');
           else if (tab === 'categories') switchTab('history');
         }

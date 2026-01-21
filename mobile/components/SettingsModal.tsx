@@ -207,7 +207,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     onValueChange={(v) => updateSetting('autoHideControls', v)}
                                     trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
                                     thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
-                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
+                                    {...(Platform.OS === 'web' ? {
+                                        activeTrackColor: theme.accent,
+                                        activeThumbColor: '#fff'
+                                    } : {})}
                                 />
                             </View>
 
@@ -241,7 +244,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     onValueChange={(v) => updateSetting('showClock', v)}
                                     trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
                                     thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
-                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
+                                    {...(Platform.OS === 'web' ? {
+                                        activeTrackColor: theme.accent,
+                                        activeThumbColor: '#fff'
+                                    } : {})}
                                 />
                             </View>
 
@@ -255,7 +261,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     onValueChange={(v) => updateSetting('showBattery', v)}
                                     trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
                                     thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
-                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
+                                    {...(Platform.OS === 'web' ? {
+                                        activeTrackColor: theme.accent,
+                                        activeThumbColor: '#fff'
+                                    } : {})}
                                 />
                             </View>
 
@@ -269,7 +278,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                     onValueChange={(v) => updateSetting('use24HourClock', v)}
                                     trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
                                     thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
-                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
+                                    {...(Platform.OS === 'web' ? {
+                                        activeTrackColor: theme.accent,
+                                        activeThumbColor: '#fff'
+                                    } : {})}
                                 />
                             </View>
 

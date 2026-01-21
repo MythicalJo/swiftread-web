@@ -117,7 +117,7 @@ export const StatusOverlay: React.FC<StatusOverlayProps> = ({
 
     return (
         <View style={styles.container}>
-            {showBattery && (
+            {showBattery && Platform.OS !== 'web' && (
                 <View style={styles.item}>
                     <Text style={[styles.text, { color: theme.text, opacity: 0.6 }]}>
                         {batteryLevel !== null ? `${Math.round(batteryLevel * 100)}% ` : ''}

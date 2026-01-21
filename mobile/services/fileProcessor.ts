@@ -11,8 +11,13 @@ async function ensurePdfLib() {
         if (!pdfjsLib) {
             pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
             if (pdfjsLib.GlobalWorkerOptions) {
-                pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-                pdfjsLib.GlobalWorkerOptions.disableWorker = true;
+                if (Platform.OS === 'web') {
+                    // Use a CDN worker for the web PWA to ensure it's always available and correct version
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+                } else {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+                    pdfjsLib.GlobalWorkerOptions.disableWorker = true;
+                }
             }
         }
     } catch (err) {
