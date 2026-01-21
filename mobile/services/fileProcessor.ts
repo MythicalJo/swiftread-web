@@ -10,14 +10,28 @@ async function ensurePdfLib() {
     try {
         if (!pdfjsLib) {
             if (Platform.OS === 'web') {
-                console.log("Searching for pdfjsLib in window...");
                 // @ts-ignore
-                const globalLib = window.pdfjsLib;
-                if (globalLib) {
-                    console.log("Found global pdfjsLib! Version:", globalLib.version);
-                    pdfjsLib = globalLib;
-                } else {
-                    console.log("Global pdfjsLib NOT found, attempting to require local fallback...");
+                if (!window.pdfjsLib) {
+                    console.log("PDF.js missing. Injecting dynamically...");
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+                        script.onload = () => {
+                            console.log("PDF.js injected successfully.");
+                            resolve(true);
+                        };
+                        script.onerror = (e) => {
+                            console.error("PDF.js injection failed.", e);
+                            reject(e);
+                        };
+                        document.head.appendChild(script);
+                    });
+                }
+
+                // @ts-ignore
+                pdfjsLib = window.pdfjsLib;
+                if (!pdfjsLib) {
+                    console.log("Global failed, trying require fallback...");
                     pdfjsLib = require('pdfjs-dist/build/pdf');
                 }
             } else {
@@ -25,24 +39,23 @@ async function ensurePdfLib() {
             }
 
             if (pdfjsLib) {
-                console.log("PDF engine confirmed:", pdfjsLib.version);
+                console.log("PDF Engine initialized. Version:", pdfjsLib.version);
                 if (pdfjsLib.GlobalWorkerOptions) {
                     if (Platform.OS === 'web') {
                         const version = pdfjsLib.version || '2.16.105';
                         pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
-                        console.log("Configured workerSrc:", pdfjsLib.GlobalWorkerOptions.workerSrc);
                     } else {
                         pdfjsLib.GlobalWorkerOptions.workerSrc = '';
                         pdfjsLib.GlobalWorkerOptions.disableWorker = true;
                     }
                 }
             } else {
-                throw new Error("PDF engine could not be initialized.");
+                throw new Error("Initialization failed.");
             }
         }
     } catch (err) {
-        console.error("CRITICAL: PDF Library initialization failed:", err);
-        throw new Error("System error: PDF engine failed. Please reload the page.");
+        console.error("PDF Library Error:", err);
+        throw new Error("PDF engine failed. Please check your connection.");
     }
 }
 
