@@ -20,8 +20,10 @@ async function ensurePdfLib() {
         if (win.pdfjsLib) {
             pdfjsLib = win.pdfjsLib;
             if (pdfjsLib.GlobalWorkerOptions) {
-                const version = pdfjsLib.version || '2.16.105';
-                pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;
+                // Force disable worker on web to avoid CORS/loading issues with CDN workers
+                console.log("Disabling PDF worker for robustness...");
+                pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+                pdfjsLib.GlobalWorkerOptions.disableWorker = true;
             }
             console.log("PDF Engine linked successfully.");
         } else {
