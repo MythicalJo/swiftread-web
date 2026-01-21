@@ -45,26 +45,29 @@ export async function processFile(asset: any): Promise<{ title: string; content:
 
     try {
         if (Platform.OS === 'web') {
-            console.log("Web/PWA processing started for:", asset.name);
+            // DEBUG: Verbose alerts to trace flow
+            alert(`Processing: ${asset.name}`);
+
             let arrayBuffer: ArrayBuffer;
             try {
-                if (asset.file instanceof File || (asset.file && typeof asset.file.arrayBuffer === 'function')) {
-                    console.log("Using direct File object arrayBuffer");
+                if (asset.file) {
+                    alert("Using File object");
                     arrayBuffer = await asset.file.arrayBuffer();
                 } else {
-                    console.log("Fetching from URI:", asset.uri);
+                    alert(`Fetching URI: ${asset.uri}`);
                     const response = await fetch(asset.uri);
                     arrayBuffer = await response.arrayBuffer();
                 }
+                alert(`Data loaded: ${arrayBuffer.byteLength} bytes`);
             } catch (loadErr) {
-                console.error("Failed to load file data:", loadErr);
-                throw new Error("Could not read file data. Please try again.");
+                alert(`Load Error: ${loadErr}`);
+                throw new Error("Could not read file data.");
             }
 
-            console.log("Data loaded, byteLength:", arrayBuffer.byteLength);
-
             if (extension === 'pdf') {
+                alert("Initializing PDF Engine...");
                 await ensurePdfLib();
+                alert("Engine Ready. Parsing...");
                 return await processPDFFromBuffer(arrayBuffer, asset.name);
             } else if (extension === 'epub') {
                 const buffer = Buffer.from(arrayBuffer);
