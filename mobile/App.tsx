@@ -279,9 +279,11 @@ export default function App() {
         const updatedBooks = [newBook, ...booksRef.current];
         await saveLibraryNow(updatedBooks);
         successCount++;
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
         failCount++;
+        // Alert on immediate failure to help debug
+        Alert.alert("Upload Error", error.message || "Unknown error processing file");
       }
     }
 
