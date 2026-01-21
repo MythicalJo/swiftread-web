@@ -26,6 +26,30 @@ export const StatusOverlay: React.FC<StatusOverlayProps> = ({
         const timer = setInterval(() => setTime(new Date()), 1000);
 
         if (Platform.OS === 'web') {
+            const getWebBattery = async () => {
+                const nav = navigator as any;
+                if (nav.getBattery) {
+                    try {
+                        const battery = await nav.getBattery();
+                        setBatteryLevel(battery.level);
+                        setIsCharging(battery.charging);
+
+                        const onLevelChange = () => setBatteryLevel(battery.level);
+                        const onChargingChange = () => setIsCharging(battery.charging);
+
+                        battery.addEventListener('levelchange', onLevelChange);
+                        battery.addEventListener('chargingchange', onChargingChange);
+
+                        return () => {
+                            battery.removeEventListener('levelchange', onLevelChange);
+                            battery.removeEventListener('chargingchange', onChargingChange);
+                        };
+                    } catch (e) {
+                        console.warn('Web Battery API error:', e);
+                    }
+                }
+            };
+            getWebBattery();
             return () => clearInterval(timer);
         }
 

@@ -87,11 +87,11 @@ const BottomPanel = React.memo(({
                 >
                     <Text style={[styles.wpmButtonText, { color: theme.subText }]}>−</Text>
                 </TouchableOpacity>
-                <View style={[styles.wpmTextContainer, { width: 50 }]}>
+                <View style={styles.wpmTextContainer}>
                     <Text style={[
                         styles.wpmValue,
                         { color: theme.text },
-                        settings.wpm > 999 && { fontSize: 16 }
+                        settings.wpm > 999 && { fontSize: 14 }
                     ]}>{settings.wpm}</Text>
                     <Text style={[styles.wpmLabel, { color: theme.subText }]}>{t.reader.wpm}</Text>
                 </View>
@@ -105,7 +105,7 @@ const BottomPanel = React.memo(({
 
             <View style={styles.centerControls}>
                 <TouchableOpacity onPress={onRewind} style={styles.rewindButton}>
-                    <RotateCcw size={24} color={theme.subText} />
+                    <RotateCcw size={22} color={theme.subText} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -113,15 +113,15 @@ const BottomPanel = React.memo(({
                     style={[styles.playPauseButton, { backgroundColor: theme.accent }]}
                 >
                     {isPlaying ? (
-                        <Pause size={32} color={theme.accentText} fill={theme.accentText} />
+                        <Pause size={28} color={theme.accentText} fill={theme.accentText} />
                     ) : (
-                        <Play size={32} color={theme.accentText} fill={theme.accentText} style={{ marginLeft: 4 }} />
+                        <Play size={28} color={theme.accentText} fill={theme.accentText} />
                     )}
                 </TouchableOpacity>
             </View>
 
             <View style={styles.settingsIcon}>
-                <TouchableOpacity onPress={onOpenSettings} style={{ padding: 10 }}>
+                <TouchableOpacity onPress={onOpenSettings} style={styles.iconButton}>
                     <Settings size={28} color={theme.subText} />
                 </TouchableOpacity>
             </View>
@@ -501,21 +501,22 @@ const styles = StyleSheet.create({
     readerArea: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
     contextArea: { marginTop: 60, paddingHorizontal: 40, alignItems: 'center' },
     contextText: { textAlign: 'center', lineHeight: 24 },
-    bottomPanel: { position: 'absolute', bottom: 40, left: 20, right: 20, zIndex: 100 },
-    sliderRow: { marginBottom: 20, paddingHorizontal: 20 },
+    bottomPanel: { position: 'absolute', bottom: 30, left: 16, right: 16, zIndex: 100 },
+    sliderRow: { marginBottom: 12, paddingHorizontal: 16 },
     bottomSlider: { width: '100%', height: 40 },
-    controlCard: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12, borderRadius: 40, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 8, height: 84 },
-    wpmControl: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', gap: 2 }, // Left Column (Grow to fill available space)
-    wpmButton: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-    wpmButtonText: { fontSize: 24, fontWeight: '300' },
-    wpmTextContainer: { alignItems: 'center', width: 44 }, // Slightly tighter width
+    controlCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 40, borderWidth: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 8, height: 80 },
+    wpmControl: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' },
+    wpmButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+    wpmButtonText: { fontSize: 24, fontWeight: '400' },
+    wpmTextContainer: { alignItems: 'center', minWidth: 44, marginHorizontal: 2 },
     wpmValue: { fontSize: 16, fontWeight: '800' },
     wpmLabel: { fontSize: 8, fontWeight: '900', marginTop: -2 },
-    centerControls: { flex: 0, flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 8 }, // Center Column (Shrink gap)
-    rewindButton: { padding: 8 }, // Reduced padding
-    playPauseButton: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
-    settingsIcon: { flex: 0, alignItems: 'center', paddingHorizontal: 4 }, // Right Column (Don't grow unnecessarily)
-    floatingPause: { position: 'absolute', bottom: 60, alignSelf: 'center', width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10, zIndex: 200 },
+    centerControls: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
+    rewindButton: { padding: 8 },
+    playPauseButton: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+    settingsIcon: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', flexDirection: 'row' },
+    iconButton: { padding: 10 },
+    floatingPause: { position: 'absolute', bottom: 40, alignSelf: 'center', width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10, zIndex: 200 },
     fullTextContainer: { flex: 1 },
     fullTextHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
     fullTextTitle: { fontSize: 28, fontWeight: '800' },

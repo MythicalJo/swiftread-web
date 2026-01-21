@@ -124,12 +124,15 @@ export default function App() {
       onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
+        if (selectedBookId) return false; // Disable tab swipe when reading
         return Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
       },
       onMoveShouldSetPanResponderCapture: (_, gestureState) => {
+        if (selectedBookId) return false; // Disable tab swipe when reading
         return Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.5;
       },
       onPanResponderRelease: (_, gestureState) => {
+        if (selectedBookId) return;
         const tab = currentTabRef.current;
         if (gestureState.dx > 40) { // Swipe Right -> Go Left
           if (tab === 'categories') switchTab('library');
