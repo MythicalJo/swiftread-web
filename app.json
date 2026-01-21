@@ -35,10 +35,12 @@
       "themeColor": "#121212",
       "backgroundColor": "#121212",
       "lang": "en",
+      "shortName": "Swift Reader",
+      "name": "Swift Reader",
       "meta": {
         "apple-mobile-web-app-capable": "yes",
         "apple-mobile-web-app-status-bar-style": "black-translucent",
-        "apple-mobile-web-app-title": "SwiftRead"
+        "apple-mobile-web-app-title": "Swift Reader"
       },
       "apple": {
         "touchIcon": "./assets/icon.png"

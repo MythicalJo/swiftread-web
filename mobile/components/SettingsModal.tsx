@@ -9,7 +9,8 @@ import {
     Modal,
     Switch,
     SafeAreaView,
-    TextInput
+    TextInput,
+    Platform
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { ReaderSettings, Book } from '../types';
@@ -204,8 +205,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 <Switch
                                     value={settings.autoHideControls}
                                     onValueChange={(v) => updateSetting('autoHideControls', v)}
-                                    trackColor={{ false: '#374151', true: theme.accent }}
-                                    thumbColor="#ffffff"
+                                    trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
+                                    thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
+                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
                                 />
                             </View>
 
@@ -237,8 +239,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 <Switch
                                     value={settings.showClock}
                                     onValueChange={(v) => updateSetting('showClock', v)}
-                                    trackColor={{ false: '#374151', true: theme.accent }}
-                                    thumbColor="#ffffff"
+                                    trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
+                                    thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
+                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
                                 />
                             </View>
 
@@ -250,8 +253,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 <Switch
                                     value={settings.showBattery}
                                     onValueChange={(v) => updateSetting('showBattery', v)}
-                                    trackColor={{ false: '#374151', true: theme.accent }}
-                                    thumbColor="#ffffff"
+                                    trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
+                                    thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
+                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
                                 />
                             </View>
 
@@ -263,8 +267,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 <Switch
                                     value={settings.use24HourClock}
                                     onValueChange={(v) => updateSetting('use24HourClock', v)}
-                                    trackColor={{ false: '#374151', true: theme.accent }}
-                                    thumbColor="#ffffff"
+                                    trackColor={{ false: isDark ? '#374151' : '#e5e7eb', true: theme.accent }}
+                                    thumbColor={isDark ? '#fff' : (isSepia ? '#f4ecd8' : '#fff')}
+                                    {...(Platform.OS === 'web' ? { activeTrackColor: theme.accent } : {})}
                                 />
                             </View>
 
