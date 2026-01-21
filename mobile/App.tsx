@@ -241,7 +241,9 @@ export default function App() {
       try {
         const result = await processFile(asset);
 
-        if ((result as any).pdfBase64) {
+        // On mobile, processFile returns pdfBase64 for the WebView parser.
+        // On web, processFile ALREADY extracted the text.
+        if (Platform.OS !== 'web' && (result as any).pdfBase64) {
           setPdfQueue(prev => [...prev, { asset, pdfBase64: (result as any).pdfBase64 }]);
           continue;
         }
