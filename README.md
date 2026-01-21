@@ -1,20 +1,40 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# SwiftRead - Speed Reading PWA
 
-# Run and deploy your AI Studio app
+A Progressive Web App for speed reading with support for TXT, PDF, and EPUB files. This version is built directly from the React Native codebase to ensure 1:1 parity with the Android app.
 
-This contains everything you need to run your app locally.
+## 🚀 Features
 
-View your app in AI Studio: https://ai.studio/apps/drive/1FUL-oc4NYCZWm7ABJ63Foa4nuvUH6RSB
+- **Speed Reading**: Customizable WPM (50-1500) with ORP highlighting
+- **File Support**: Upload TXT, PDF, and EPUB files
+- **Progress Tracking**: Save your reading progress
+- **History & Stats**: Track words read, time spent, and completed books (including Supporters Hall of Fame)
+- **Themes**: Light, Dark, and Sepia modes
+- **Offline Support**: Works without internet (PWA)
+- **iOS Optimized**: Add to Home Screen for native app experience
+- **Multilingual**: English and Spanish support
 
-## Run Locally
+## 📱 Live App
 
-**Prerequisites:**  Node.js
+**[Launch SwiftRead](https://mythicaljo.github.io/swiftread-web/)**
 
+## 🛠️ Local Development
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+# Install dependencies
+npm install --legacy-peer-deps
+
+# Run web version
+npm run web
+```
+
+## 🏗️ Tech Stack
+
+- **React Native / Expo** - Cross-platform core
+- **React Native Web** - Web implementation
+- **Lucide React** - Icons
+- **PDF.js** - PDF parsing
+- **JSZip** - EPUB parsing
+
+## 📄 License
+
+MIT
