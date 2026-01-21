@@ -3,6 +3,11 @@
     "name": "Swift Reader",
     "slug": "swift-read",
     "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -34,6 +39,9 @@
       "apple": {
         "touchIcon": "./assets/icon.png"
       }
+    },
+    "experiments": {
+      "baseUrl": "/swiftread-web"
     }
   }
 }

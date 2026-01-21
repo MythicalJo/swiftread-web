@@ -1,5 +1,1 @@
-{
-  "name": "SwiftRead",
-  "description": "A minimalist speed-reading application that supports PDF and EPUB files with Optimal Recognition Point (ORP) rendering.",
-  "requestFramePermissions": []
-}
+{"version":0,"bundler":"metro","fileMetadata":{}}
