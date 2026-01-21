@@ -10,11 +10,12 @@ async function ensurePdfLib() {
     try {
         if (!pdfjsLib) {
             if (Platform.OS === 'web') {
-                pdfjsLib = require('pdfjs-dist/build/pdf');
+                // @ts-ignore
+                pdfjsLib = window.pdfjsLib || require('pdfjs-dist/build/pdf');
             } else {
                 pdfjsLib = require('pdfjs-dist/legacy/build/pdf');
             }
-            if (pdfjsLib.GlobalWorkerOptions) {
+            if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
                 if (Platform.OS === 'web') {
                     const version = pdfjsLib.version || '2.16.105';
                     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.js`;

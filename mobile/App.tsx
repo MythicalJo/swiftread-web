@@ -13,7 +13,6 @@ import { HistoryView } from './components/HistoryView';
 import { LayoutGrid, Folder, BarChart2 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as NavigationBar from 'expo-navigation-bar';
-import { StatusOverlay } from './components/StatusOverlay';
 import { BackHandler, PanResponder } from 'react-native';
 import { translations } from './services/i18n';
 
@@ -53,6 +52,11 @@ export default function App() {
 
   const booksRef = useRef<Book[]>([]);
   booksRef.current = books;
+  const selectedBookIdRef = useRef(selectedBookId);
+  selectedBookIdRef.current = selectedBookId;
+  const showGlobalSettingsRef = useRef(showGlobalSettings);
+  showGlobalSettingsRef.current = showGlobalSettings;
+
   const lastUpdateRef = useRef<number>(0);
   const tabOffset = useRef(new Animated.Value(0)).current;
   const { width } = Dimensions.get('window');
@@ -121,15 +125,15 @@ export default function App() {
       onStartShouldSetPanResponder: () => false,
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        if (selectedBookId) return false; // Disable tab swipe when reading
+        if (selectedBookIdRef.current || showGlobalSettingsRef.current) return false; // Disable tab swipe when reading or in settings
         return Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
       },
       onMoveShouldSetPanResponderCapture: (_, gestureState) => {
-        if (selectedBookId) return false; // Disable tab swipe when reading
+        if (selectedBookIdRef.current || showGlobalSettingsRef.current) return false; // Disable tab swipe when reading or in settings
         return Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) * 1.5;
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (selectedBookId) return;
+        if (selectedBookIdRef.current || showGlobalSettingsRef.current) return;
         const tab = currentTabRef.current;
         const threshold = 40;
         if (gestureState.dx > threshold) { // Swipe Right -> Go Left
