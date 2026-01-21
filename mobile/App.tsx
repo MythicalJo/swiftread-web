@@ -97,27 +97,6 @@ export default function App() {
 
   // Global Back Handler
   useEffect(() => {
-    // PWA Diagnostic Test
-    if (Platform.OS === 'web') {
-      const runDiag = async () => {
-        console.log("--- PWA DIAGNOSTICS STARTING ---");
-        try {
-          // Verify that processFile can handle a mock or real PDF
-          // We'll just log the state transition capability
-          console.log("Setting isUploading=true (simulated)");
-          setIsUploading(true);
-          setTimeout(() => {
-            console.log("Setting isUploading=false (simulated cleanup)");
-            setIsUploading(false);
-            console.log("--- PWA DIAGNOSTICS SUCCESS ---");
-          }, 2000);
-        } catch (e) {
-          console.error("DIAGNOSTIC FAILURE:", e);
-        }
-      };
-      runDiag();
-    }
-
     const onBackPress = () => {
       if (selectedBookId) {
         setSelectedBookId(null);
