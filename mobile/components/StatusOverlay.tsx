@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, AppState } from 'react-native';
+import { View, Text, StyleSheet, AppState, Platform } from 'react-native';
 import * as Battery from 'expo-battery';
 import { Battery as BatteryIcon, BatteryCharging, BatteryLow, BatteryMedium, BatteryFull } from 'lucide-react-native';
 
@@ -20,10 +20,14 @@ export const StatusOverlay: React.FC<StatusOverlayProps> = ({
     const [time, setTime] = useState(new Date());
     const [batteryLevel, setBatteryLevel] = useState<number | null>(null);
     const [isCharging, setIsCharging] = useState(false);
-    const appState = useRef(AppState.currentState);
+    const appState = useRef(Platform.OS === 'web' ? 'active' : AppState.currentState);
 
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
+
+        if (Platform.OS === 'web') {
+            return () => clearInterval(timer);
+        }
 
         const getBattery = async () => {
             try {

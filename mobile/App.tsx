@@ -83,6 +83,7 @@ export default function App() {
     loadData();
     // Enable immersive mode
     const enableImmersive = async () => {
+      if (Platform.OS === 'web') return;
       try {
         await NavigationBar.setVisibilityAsync('hidden');
         await NavigationBar.setBehaviorAsync('inset-touch');
