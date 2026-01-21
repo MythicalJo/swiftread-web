@@ -1,40 +1,53 @@
-# SwiftRead - Speed Reading PWA
+# Swift Reader — Speed Reading redefined.
 
-A Progressive Web App for speed reading with support for TXT, PDF, and EPUB files. This version is built directly from the React Native codebase to ensure 1:1 parity with the Android app.
+**Swift Reader** is a high-performance Progressive Web App (PWA) designed to help you consume information faster without losing comprehension. Originally built for Android, this web version brings the same premium speed-reading experience to your browser and iOS devices.
 
-## 🚀 Features
+**[🚀 Launch Swift Reader Live](https://mythicaljo.github.io/swiftread-web/)**
 
-- **Speed Reading**: Customizable WPM (50-1500) with ORP highlighting
-- **File Support**: Upload TXT, PDF, and EPUB files
-- **Progress Tracking**: Save your reading progress
-- **History & Stats**: Track words read, time spent, and completed books (including Supporters Hall of Fame)
-- **Themes**: Light, Dark, and Sepia modes
-- **Offline Support**: Works without internet (PWA)
-- **iOS Optimized**: Add to Home Screen for native app experience
-- **Multilingual**: English and Spanish support
+---
 
-## 📱 Live App
+## ✨ Features
 
-**[Launch SwiftRead](https://mythicaljo.github.io/swiftread-web/)**
+- **Optimal Recognition Point (ORP)**: Our reader highlights the specific character your eye should focus on, reducing eye movement and increasing speed.
+- **Smart Parsing**: Support for **PDF, EPUB, and TXT** files. We strip out footnotes and formatting noise to keep you focused on the text.
+- **Supporters Hall of Fame**: A dedicated space for our community, fetched live from our supporters registry.
+- **Customizable Themes**: Comfort for any environment with **Light, Dark, and Sepia** modes.
+- **Offline First**: Fully functional as a PWA. Install it on your home screen and read anywhere, even without a connection.
 
-## 🛠️ Local Development
+---
+
+## 📖 How It Works
+
+### 1. Importing Content
+- **Upload File**: Tap the primary "+" button to select a PDF, EPUB, or TXT file from your device.
+- **Paste Text**: Use the "Paste Text" button to quickly read articles, emails, or snippets from your clipboard.
+
+### 2. The Reading Experience
+- **WPM Control**: Adjust your reading speed from **50 to 1500 words per minute**. 
+    > [!TIP]
+    > Start at your comfortable reading speed and increase by 25 WPM every few days to train your brain.
+- **Scrubbing/Scanning**: Swipe or drag your mouse left/right across the reader to quickly scan through the book.
+- **Full Text View**: Tap the "List" icon at the top to see the full text. Scroll through and tap any word to jump exactly to that point!
+
+### 3. PWA Installation
+- **On iOS**: Open the link in Safari, tap the **Share** button, and select **"Add to Home Screen"**.
+- **On Android/Desktop**: Tap the "Install" prompt in the address bar or the three-dot menu to add Swift Reader as a standalone app.
+
+---
+
+## 🛠️ Tech Stack & Development
+
+Swift Reader is built with **Expo & React Native Web**, ensuring 1:1 parity between our Android APK and this Web version.
 
 ```bash
-# Install dependencies
+# Clone and Install
 npm install --legacy-peer-deps
 
-# Run web version
-npm run web
+# Run locally (Web)
+npx expo start --web
 ```
 
-## 🏗️ Tech Stack
-
-- **React Native / Expo** - Cross-platform core
-- **React Native Web** - Web implementation
-- **Lucide React** - Icons
-- **PDF.js** - PDF parsing
-- **JSZip** - EPUB parsing
+---
 
 ## 📄 License
-
-MIT
+Created by **MythicalJo**. Licensed under MIT.
