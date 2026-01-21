@@ -41,6 +41,7 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [settings, setSettings] = useState<ReaderSettings>(DEFAULT_SETTINGS);
   const [showGlobalSettings, setShowGlobalSettings] = useState(false);
+  const [debugStatus, setDebugStatus] = useState<string>("");
   const [sortBy, setSortBy] = useState<'recent' | 'added' | 'az' | 'finished' | 'unfinished'>('recent');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [viewMode, setViewMode] = useState<'default' | 'list' | 'grid'>('default');
@@ -236,6 +237,7 @@ export default function App() {
     if (assetsToProcess.length === 0) return;
 
     setIsUploading(true);
+    setDebugStatus("Starting upload...");
 
     for (const asset of assetsToProcess) {
       const assetName = asset.name.replace(/\.[^/.]+$/, "").toLowerCase().trim();
@@ -243,7 +245,7 @@ export default function App() {
       existingTitles.add(assetName);
 
       try {
-        const result = await processFile(asset);
+        const result = await processFile(asset, (msg) => setDebugStatus(msg));
 
         // On mobile, processFile returns pdfBase64 for the WebView parser.
         // On web, processFile ALREADY extracted the text.
@@ -287,6 +289,7 @@ export default function App() {
       }
     }
 
+    setDebugStatus("");
     if (pdfQueue.length === 0) {
       // On web, if all files were processed (no queue used), we MUST stop uploading
       // On mobile, if there were no PDFs, we stop uploading.
@@ -545,6 +548,7 @@ export default function App() {
                 onResetProgress={handleResetProgress}
                 onOpenSettings={() => setShowGlobalSettings(true)}
                 isUploading={isUploading}
+                debugStatus={debugStatus}
                 settings={settings}
                 sortBy={sortBy}
                 sortOrder={sortOrder}

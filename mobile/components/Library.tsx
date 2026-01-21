@@ -39,10 +39,11 @@ interface LibraryProps {
     categories: Category[];
     onAddToCategory: (bookId: string, categoryId: string) => void;
     goToCategories: () => void;
+    debugStatus?: string;
 }
 
 export const Library: React.FC<LibraryProps> = ({
-    books, onSelect, onUpload, onPaste, onDelete, onResetProgress, onOpenSettings, isUploading, settings, sortBy, sortOrder, viewMode, onSortChange, onToggleOrder, onViewModeChange, categories, onAddToCategory, goToCategories
+    books, onSelect, onUpload, onPaste, onDelete, onResetProgress, onOpenSettings, isUploading, settings, sortBy, sortOrder, viewMode, onSortChange, onToggleOrder, onViewModeChange, categories, onAddToCategory, goToCategories, debugStatus
 }) => {
     const t = translations[settings.language].library;
     const commonT = translations[settings.language].common;
@@ -180,9 +181,12 @@ export const Library: React.FC<LibraryProps> = ({
             </View>
 
             {isUploading && (
-                <View style={[styles.uploadingBar, { backgroundColor: isDark ? 'rgba(30, 58, 138, 0.2)' : '#eff6ff' }]}>
-                    <ActivityIndicator size="small" color="#3b82f6" style={styles.spinner} />
-                    <Text style={[styles.uploadingText, { color: isDark ? '#93c5fd' : '#1d4ed8' }]}>{t.processing}</Text>
+                <View style={[styles.loadingOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)' }]}>
+                    <ActivityIndicator size="large" color={theme.accent} />
+                    <Text style={[styles.loadingText, { color: theme.text }]}>{t.processing}</Text>
+                    {debugStatus ? (
+                        <Text style={{ color: theme.subText, marginTop: 10, fontSize: 12 }}>{debugStatus}</Text>
+                    ) : null}
                 </View>
             )}
 
@@ -991,5 +995,20 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 50,
+    },
+    loadingText: {
+        marginTop: 15,
+        fontSize: 14,
+        fontWeight: '600',
     }
 });

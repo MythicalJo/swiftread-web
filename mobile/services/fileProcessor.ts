@@ -40,35 +40,47 @@ async function ensurePdfLib() {
     }
 }
 
-export async function processFile(asset: any): Promise<{ title: string; content: string[]; cover?: string; pdfBase64?: string }> {
+export async function processFile(asset: any, onProgress?: (msg: string) => void): Promise<{ title: string; content: string[]; cover?: string; pdfBase64?: string }> {
     const extension = asset.name.split('.').pop()?.toLowerCase();
+
+    const log = (msg: string) => {
+        console.log(msg);
+        if (onProgress) onProgress(msg);
+    };
 
     try {
         if (Platform.OS === 'web') {
-            // DEBUG: Verbose alerts to trace flow
-            alert(`Processing: ${asset.name}`);
+            log(`Web processing: ${asset.name}`);
 
             let arrayBuffer: ArrayBuffer;
             try {
                 if (asset.file) {
-                    alert("Using File object");
+                    log("Reading file directly...");
                     arrayBuffer = await asset.file.arrayBuffer();
                 } else {
-                    alert(`Fetching URI: ${asset.uri}`);
+                    log(`Fetching URI: ${asset.uri}`);
                     const response = await fetch(asset.uri);
                     arrayBuffer = await response.arrayBuffer();
                 }
-                alert(`Data loaded: ${arrayBuffer.byteLength} bytes`);
+                log(`Data loaded: ${arrayBuffer.byteLength} bytes`);
+
+                // Magic Byte Check
+                const header = new Uint8Array(arrayBuffer.slice(0, 5));
+                const headerStr = String.fromCharCode(...header);
+                if (extension === 'pdf' && headerStr !== '%PDF-') {
+                    throw new Error(`Invalid PDF header: ${headerStr}`);
+                }
+
             } catch (loadErr) {
-                alert(`Load Error: ${loadErr}`);
+                log(`Load Error: ${loadErr}`);
                 throw new Error("Could not read file data.");
             }
 
             if (extension === 'pdf') {
-                alert("Initializing PDF Engine...");
+                log("Initializing PDF Engine...");
                 await ensurePdfLib();
-                alert("Engine Ready. Parsing...");
-                return await processPDFFromBuffer(arrayBuffer, asset.name);
+                log("Engine Ready. Parsing...");
+                return await processPDFFromBuffer(arrayBuffer, asset.name, log);
             } else if (extension === 'epub') {
                 const buffer = Buffer.from(arrayBuffer);
                 return await processEPUBFromBuffer(buffer, asset.name);
@@ -99,10 +111,10 @@ export async function processFile(asset: any): Promise<{ title: string; content:
     }
 }
 
-async function processPDFFromBuffer(data: ArrayBuffer | Buffer, filename: string): Promise<{ title: string; content: string[]; cover?: string }> {
+async function processPDFFromBuffer(data: ArrayBuffer | Buffer, filename: string, log?: (m: string) => void): Promise<{ title: string; content: string[]; cover?: string }> {
     let pdf: any = null;
     try {
-        console.log("Initializing PDF engine with data...");
+        if (log) log("Loading document...");
         const uint8 = data instanceof ArrayBuffer ? new Uint8Array(data) : data;
 
         // Use a timeout for the loading task to prevent indefinite hangs
@@ -116,13 +128,14 @@ async function processPDFFromBuffer(data: ArrayBuffer | Buffer, filename: string
 
         pdf = await Promise.race([
             loadingTask.promise,
-            new Promise((_, reject) => setTimeout(() => reject(new Error("PDF loading timed out (30s)")), 30000))
+            new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout: PDF parse took >15s")), 15000))
         ]);
 
-        console.log("PDF engine ready. Pages:", pdf.numPages);
-        const result = await extractFromPdf(pdf, filename);
+        if (log) log(`PDF Loaded. Pages: ${pdf.numPages}`);
+        const result = await extractFromPdf(pdf, filename, log);
         return result;
-    } catch (err) {
+    } catch (err: any) {
+        if (log) log(`PDF Error: ${err.message}`);
         console.error("PDF.js Processing Error:", err);
         throw new Error(`PDF Error: ${(err as Error).message}`);
     } finally {
@@ -132,13 +145,13 @@ async function processPDFFromBuffer(data: ArrayBuffer | Buffer, filename: string
     }
 }
 
-async function extractFromPdf(pdf: any, filename: string): Promise<{ title: string; content: string[]; cover?: string }> {
+async function extractFromPdf(pdf: any, filename: string, log?: (m: string) => void): Promise<{ title: string; content: string[]; cover?: string }> {
     const words: string[] = [];
     const maxPages = Math.min(pdf.numPages, 1200);
     console.log(`Extracting text from ${maxPages} pages...`);
 
     for (let i = 1; i <= maxPages; i++) {
-        if (i % 50 === 0) console.log(`Processing page ${i}/${maxPages}...`);
+        if (log && i % 10 === 0) log(`Parsing page ${i}/${maxPages}...`);
         try {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
