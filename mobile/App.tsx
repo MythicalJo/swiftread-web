@@ -221,10 +221,13 @@ export default function App() {
     const assetsToProcess = assets.filter(asset => {
       const assetName = asset.name.replace(/\.[^/.]+$/, "").toLowerCase().trim();
       if (existingTitles.has(assetName)) {
-        Alert.alert(
-          translations[settings.language].common.duplicateTitle,
-          translations[settings.language].common.duplicateBody
-        );
+        // Only alert if it's a single file upload, otherwise just skip silently
+        if (assets.length === 1) {
+          Alert.alert(
+            translations[settings.language].common.duplicateTitle,
+            translations[settings.language].common.duplicateBody
+          );
+        }
         return false;
       }
       return true;
@@ -494,9 +497,11 @@ export default function App() {
     border: settings.theme === 'dark' ? 'rgba(255,255,255,0.05)' : (settings.theme === 'sepia' ? '#c4b595' : '#f3f4f6'),
   };
 
+  const wrapperStyle = { flex: 1, backgroundColor: '#121212' }; // Prevent white flash
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bg }]}>
-      <StatusBar hidden />
+    <SafeAreaView style={[wrapperStyle, { backgroundColor: settings.theme === 'dark' ? '#121212' : '#f8f9fa' }]}>
+      <StatusBar barStyle={settings.theme === 'dark' ? 'light-content' : 'dark-content'} />
       {selectedBook ? (
         <Reader
           book={selectedBook}
