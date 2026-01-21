@@ -48,14 +48,16 @@ export async function processFile(asset: any): Promise<{ title: string; content:
 
     try {
         if (Platform.OS === 'web') {
+            console.log("Web processing started for:", asset.name);
             const response = await fetch(asset.uri);
             const arrayBuffer = await response.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
+            console.log("Buffer loaded, size:", arrayBuffer.byteLength);
 
             if (extension === 'pdf') {
                 await ensurePdfLib();
-                return await processPDFFromBuffer(buffer, asset.name);
+                return await processPDFFromBuffer(arrayBuffer, asset.name);
             } else if (extension === 'epub') {
+                const buffer = Buffer.from(arrayBuffer);
                 return await processEPUBFromBuffer(buffer, asset.name);
             } else if (extension === 'txt') {
                 const text = new TextDecoder().decode(arrayBuffer);
@@ -84,21 +86,24 @@ export async function processFile(asset: any): Promise<{ title: string; content:
     }
 }
 
-async function processPDFFromBuffer(buffer: Buffer, filename: string): Promise<{ title: string; content: string[]; cover?: string }> {
+async function processPDFFromBuffer(data: ArrayBuffer | Buffer, filename: string): Promise<{ title: string; content: string[]; cover?: string }> {
     let pdf: any = null;
     try {
+        console.log("Starting PDF getDocument...");
         const loadingTask = pdfjsLib.getDocument({
-            data: new Uint8Array(buffer),
-            verbosity: 0,
+            data: data instanceof ArrayBuffer ? new Uint8Array(data) : data,
+            verbosity: 1, // Show errors in console
             stopAtErrors: false,
             disableFontFace: true,
             cMapPacked: true
         });
 
         pdf = await loadingTask.promise;
+        console.log("PDF loaded, numPages:", pdf.numPages);
         const result = await extractFromPdf(pdf, filename);
         return result;
     } catch (err) {
+        console.error("Internal PDF Error:", err);
         throw new Error(`PDF Error: ${(err as Error).message}`);
     } finally {
         if (pdf) {
