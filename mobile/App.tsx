@@ -508,7 +508,7 @@ export default function App() {
         <Animated.View
           style={{ flex: 1 }}
           {...tabPanResponder.panHandlers}
-          pointerEvents={(selectedBookId || showGlobalSettings) ? 'none' : 'auto'}
+          pointerEvents={showGlobalSettings ? 'none' : 'auto'}
         >
           <Animated.View style={{
             flex: 1,
@@ -636,14 +636,15 @@ export default function App() {
             </TouchableOpacity>
           </View>
 
-          {showGlobalSettings && (
-            <SettingsModal
-              settings={settings}
-              onUpdateSettings={updateSettings}
-              onClose={() => setShowGlobalSettings(false)}
-            />
-          )}
         </Animated.View>
+      )}
+
+      {showGlobalSettings && (
+        <SettingsModal
+          settings={settings}
+          onUpdateSettings={updateSettings}
+          onClose={() => setShowGlobalSettings(false)}
+        />
       )}
       {Platform.OS !== 'web' && pdfQueue.length > 0 && (
         <View style={{ height: 0, width: 0, opacity: 0 }}>
